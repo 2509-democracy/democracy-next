@@ -143,3 +143,115 @@ export const buyCardAtom = atom(null, (get, set, cardIndex: number) => {
 });
 
 export const ideaAtom = atom<string>('');
+
+// マルチモード用の拡張
+export interface MultiPlayer {
+  id: string;
+  name: string;
+  score: number;
+  resource: number;
+  techLevels: Record<string, number>;
+  hand: TechCard[];
+  selectedCards: TechCard[];
+  idea: string;
+  isReady: boolean;
+  isConnected: boolean;
+}
+
+export interface MultiGameState {
+  mode: 'single' | 'multi';
+  players: MultiPlayer[];
+  currentPlayerId: string;
+  gameStarted: boolean;
+  currentPhase: 'preparation' | 'execution' | 'result';
+  timeLeft: number;
+  isTimerActive: boolean;
+}
+
+// マルチゲーム初期状態
+const initialMultiGameState: MultiGameState = {
+  mode: 'single',
+  players: [],
+  currentPlayerId: '',
+  gameStarted: false,
+  currentPhase: 'preparation',
+  timeLeft: 0,
+  isTimerActive: false,
+};
+
+// マルチゲーム用atom
+export const multiGameStateAtom = atom<MultiGameState>(initialMultiGameState);
+
+// マルチゲーム用derived atoms
+export const currentPlayerAtom = atom((get) => {
+  const multiState = get(multiGameStateAtom);
+  return multiState.players.find(p => p.id === multiState.currentPlayerId) || null;
+});
+
+export const otherPlayersAtom = atom((get) => {
+  const multiState = get(multiGameStateAtom);
+  return multiState.players.filter(p => p.id !== multiState.currentPlayerId);
+});
+
+// マルチゲーム初期化action
+export const initializeMultiGameAtom = atom(
+  null,
+  (get, set, players: MultiPlayer[], playerId: string) => {
+    set(multiGameStateAtom, {
+      ...initialMultiGameState,
+      mode: 'multi',
+      players,
+      currentPlayerId: playerId,
+      gameStarted: true,
+    });
+    
+    // 現在のプレイヤーの状態をゲーム状態に反映
+    const currentPlayer = players.find(p => p.id === playerId);
+    if (currentPlayer) {
+      set(gameStateAtom, {
+        ...get(gameStateAtom),
+        resource: currentPlayer.resource,
+        score: currentPlayer.score,
+        techLevels: currentPlayer.techLevels,
+        hand: currentPlayer.hand,
+        selectedCards: currentPlayer.selectedCards,
+      });
+      set(ideaAtom, currentPlayer.idea);
+    }
+  }
+);
+
+// タイマー関連
+export const startTimerAtom = atom(
+  null,
+  (get, set, seconds: number) => {
+    const multiState = get(multiGameStateAtom);
+    set(multiGameStateAtom, {
+      ...multiState,
+      timeLeft: seconds,
+      isTimerActive: true,
+    });
+  }
+);
+
+export const stopTimerAtom = atom(
+  null,
+  (get, set) => {
+    const multiState = get(multiGameStateAtom);
+    set(multiGameStateAtom, {
+      ...multiState,
+      isTimerActive: false,
+    });
+  }
+);
+
+export const updateTimerAtom = atom(
+  null,
+  (get, set, timeLeft: number) => {
+    const multiState = get(multiGameStateAtom);
+    set(multiGameStateAtom, {
+      ...multiState,
+      timeLeft: Math.max(0, timeLeft),
+    });
+  }
+);
