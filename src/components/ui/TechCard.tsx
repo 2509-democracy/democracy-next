@@ -46,26 +46,18 @@ export function TechCard({
         レベル {techLevel ?? card.level}
       </div>
       <div className="mb-2 text-xs w-full">
-        <table>
+        <table className="w-full">
           <tbody>
-            <tr>
-              <td className="pr-1 text-left">難度:</td>
-              <td className="text-left">
-                {renderEmojis(card.difficulty, "🧩")}
-              </td>
-            </tr>
-            <tr>
-              <td className="pr-1 text-left">人気:</td>
-              <td className="text-left">
-                {renderEmojis(card.popularity, "⭐")}
-              </td>
-            </tr>
-            <tr>
-              <td className="pr-1 text-left">性能:</td>
-              <td className="text-left">
-                {renderEmojis(card.performance, "⚡")}
-              </td>
-            </tr>
+            {[
+              { label: "難度", value: renderEmojis(card.difficulty, "🧩") },
+              { label: "人気", value: renderEmojis(card.popularity, "⭐") },
+              { label: "性能", value: renderEmojis(card.performance, "⚡") },
+            ].map(({ label, value }) => (
+              <tr key={label}>
+                <td className="pr-1 text-left">{label}:</td>
+                <td className="text-left">{value}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
