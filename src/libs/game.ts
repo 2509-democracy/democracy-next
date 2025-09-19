@@ -1,8 +1,6 @@
-import { TechCard, GameData } from '@/types/game';
+import { TechCard } from '@/features/card-pool';
 import { GAME_CONFIG } from '@/const/game';
 
-// 技術レベル関連の機能は @/features/tech-levels に移動されました
-// 後方互換性のため、リエクスポート
 export {
   calculateTechLevelBonus,
   calculateFinalBonus,

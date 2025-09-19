@@ -1,8 +1,8 @@
 import { atom } from 'jotai';
-import { GameState, TechCard, HackathonInfo } from '@/types/game';
-import { generateCardPool } from '@/features/card-pool';
-import { initializeShopAtom } from '@/features/shop';
+import { GameState, HackathonInfo } from '@/types/game';
+import { generateCardPool, getShuffledPool } from '@/features/card-pool';
 import { THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
+import { TechCard } from '@/features/card-pool';
 
 // 初期状態
 const initialGameState: GameState = {
@@ -10,7 +10,7 @@ const initialGameState: GameState = {
   resource: GAME_CONFIG.INITIAL_RESOURCE,
   score: 0,
   hand: [],
-  shop: [],
+  shop: [], // TODO: features/shop に完全移行後は削除予定
   cardPool: generateCardPool(),
   techLevels: {},
   hackathonInfo: null,
@@ -105,20 +105,41 @@ export const initializeGameAtom = atom(null, (get, set) => {
     hackathonInfo: newHackathonInfo,
   });
 
-  // ショップを初期化（新しいショップ機能を使用）
-  // Note: ショップの初期化は別途 initializeShopAtom で行う必要があります
+  // ショップを生成
+  const shuffledPool = getShuffledPool({ shuffled: true, size: GAME_CONFIG.SHOP_SIZE });
+  set(shopAtom, shuffledPool);
 });
 
 export const rerollShopAtom = atom(null, (get, set) => {
-  // 新しいショップ機能を使用するため、このatomは非推奨
-  // rerollShopActionAtom を使用してください
-  console.warn('rerollShopAtom is deprecated, use rerollShopActionAtom from @/features/shop');
+  const state = get(gameStateAtom);
+  if (state.resource < GAME_CONFIG.REROLL_COST) return;
+
+  set(resourceAtom, state.resource - GAME_CONFIG.REROLL_COST);
+  
+  const shuffledPool = getShuffledPool({ shuffled: true, size: GAME_CONFIG.SHOP_SIZE });
+  set(shopAtom, shuffledPool);
 });
 
 export const buyCardAtom = atom(null, (get, set, cardIndex: number) => {
-  // 新しいショップ機能を使用するため、このatomは非推奨
-  // purchaseCardActionAtom を使用してください
-  console.warn('buyCardAtom is deprecated, use purchaseCardActionAtom from @/features/shop');
+  const state = get(gameStateAtom);
+  const card = state.shop[cardIndex];
+  
+  if (!card || state.resource < card.cost) return;
+
+  // リソースを消費
+  set(resourceAtom, state.resource - card.cost);
+  
+  // 手札に追加
+  set(handAtom, [...state.hand, card]);
+  
+  // ショップから削除
+  const newShop = state.shop.filter((_, index) => index !== cardIndex);
+  set(shopAtom, newShop);
+  
+  // 技術レベルを設定
+  const newTechLevels = { ...state.techLevels };
+  newTechLevels[card.id] = newTechLevels[card.id] || card.level;
+  set(techLevelsAtom, newTechLevels);
 });
 
 export const ideaAtom = atom<string>('');

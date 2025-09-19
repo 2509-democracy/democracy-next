@@ -13,6 +13,7 @@ import {
   resourceAtom,
   isLoadingAtom,
 } from '@/store/game';
+import { initializeShopAtom } from '@/features/shop';
 import { GameStatus } from '@/components/game/GameStatus';
 import { HackathonInfo } from '@/components/game/HackathonInfo';
 import { Shop } from '@/components/game/Shop';
@@ -31,11 +32,12 @@ import {
   isGameEnded,
   canStartHackathon
 } from '@/libs/game';
-import { THEMES, DIRECTIONS } from '@/const/game';
+import { THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
 
 export default function SingleModePage() {
   const [gameState] = useAtom(gameStateAtom);
   const [, initializeGame] = useAtom(initializeGameAtom);
+  const [, initializeShop] = useAtom(initializeShopAtom);
   const [selectedCards, setSelectedCards] = useAtom(selectedCardsAtom);
   const [idea, setIdea] = useAtom(ideaAtom);
   const [turn, setTurn] = useAtom(turnAtom);
@@ -49,7 +51,8 @@ export default function SingleModePage() {
 
   useEffect(() => {
     initializeGame();
-  }, [initializeGame]);
+    initializeShop(GAME_CONFIG.SHOP_SIZE);
+  }, [initializeGame, initializeShop]);
 
   const handleStartHackathon = async () => {
     if (!canStartHackathon(selectedCards, idea) || !gameState.hackathonInfo) {
