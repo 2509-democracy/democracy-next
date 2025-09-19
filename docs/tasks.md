@@ -1,89 +1,139 @@
-# タスク: sample.html を Next.js アプリに移管
+# マルチモード対応レイアウト拡張計画
 
-## 分析結果
+## 目標
+- 各ペイン（左・右・下）を展開/縮小可能にする
+- 右ペインに他プレイヤー情報を表示
+- シングルモードでは自分のみ表示
+- マルチモード時には複数プレイヤー対応
 
-### 現在のsample.htmlの構造
-- HTML + Tailwind CSS + Vanilla JavaScript で実装されたハッカソンゲーム
-- 状態管理: `gameData`オブジェクト
-- UI更新: DOM操作による動的更新
-- イベント処理: addEventListener での直接的なイベントハンドリング
-- APIコール: Gemini API を使用したAI採点機能
+## 新しいレイアウト設計
 
-### 必要な依存関係
-- Jotai (状態管理) - 未インストール
-- 既存: React 19, Next.js 15, TailwindCSS
+### 全体構成（拡張版）
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ 上部ヘッダー（ターン・スコア・リソース・ペイン制御ボタン）          │
+├─────────┬─────────────────────────────────┬─────────────────────────┤
+│[←]左ペイン│        中央ペイン（固定）        │       右ペイン[→]       │
+│ スコア詳細│    - ハッカソン情報            │  - 他プレイヤー情報      │
+│ 技術レベル│    - 選択カード                │  - スコアランキング      │
+│          │    - アイデア入力              │  - プレイヤー状態        │
+│          │    - 開始ボタン                │                         │
+├─────────┴─────────────────────────────────┴─────────────────────────┤
+│              下部ペイン（ショップ・手札タブ）[↕]                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ## 実装計画
 
-### 1. 依存関係インストール
-```bash
-npm install jotai
+### フェーズ1: ペイン展開/縮小機能の実装
+- GameLayoutコンポーネントに状態管理追加
+- 各ペインの展開/縮小状態を管理
+- アニメーション付きの展開/縮小機能
+- ペイン制御ボタンの実装
+
+### フェーズ2: 他プレイヤー情報コンポーネントの作成
+- PlayerInfo コンポーネント作成
+- PlayerList コンポーネント作成（複数プレイヤー管理）
+- プレイヤー状態管理用の atoms 追加
+- ランキング表示機能
+
+### フェーズ3: マルチモード対応状態管理
+- マルチプレイヤー用の state 設計
+- プレイヤー情報の型定義
+- リアルタイム更新対応（将来の WebSocket 対応準備）
+
+### フェーズ4: シングルモード対応
+- シングルモードでは自分のみ表示
+- プレイヤー切り替え機能
+- モード判定ロジック
+
+## 新規作成するファイル
+
+### コンポーネント
+- `src/components/layout/CollapsibleGameLayout.tsx` - 展開縮小対応レイアウト
+- `src/components/game/PlayerInfo.tsx` - 個別プレイヤー情報表示
+- `src/components/game/PlayerList.tsx` - プレイヤーリスト管理
+- `src/components/game/PaneToggle.tsx` - ペイン展開縮小ボタン
+
+### 状態管理
+- `src/store/players.ts` - プレイヤー情報管理用 atoms
+- `src/store/ui.ts` - UI状態管理用 atoms（ペイン展開状態等）
+
+### 型定義
+- `src/types/player.ts` - プレイヤー関連型定義
+- `src/types/ui.ts` - UI状態関連型定義
+
+## 更新するファイル
+
+### メインページ
+- `src/app/single-mode/page.tsx` - 新レイアウト適用
+
+### 既存コンポーネント
+- `src/components/game/GameStatus.tsx` - ペイン制御ボタン追加
+- `src/components/game/ScoreSummary.tsx` - 展開縮小対応
+
+## 技術的設計
+
+### ペイン展開縮小機能
+```typescript
+interface PaneState {
+  left: boolean;
+  right: boolean;
+  bottom: boolean;
+}
+
+const paneStateAtom = atom<PaneState>({
+  left: true,
+  right: true,
+  bottom: true
+});
 ```
 
-### 2. 型定義作成 (types/)
-- `src/types/game.ts`: ゲーム関連の型定義
-  - TechCard, GameData, HackathonInfo, GamePhase など
+### プレイヤー情報管理
+```typescript
+interface PlayerInfo {
+  id: string;
+  name: string;
+  score: number;
+  resource: number;
+  techLevels: Record<string, number>;
+  selectedCards: TechCard[];
+  isCurrentPlayer: boolean;
+}
 
-### 3. 定数定義 (const/)
-- `src/const/game.ts`: ゲーム定数
-  - allTechCards, themes, directions
+interface GameMode {
+  type: 'single' | 'multi';
+  players: PlayerInfo[];
+  currentPlayerId: string;
+}
+```
 
-### 4. Jotai状態管理 (store/)
-- `src/store/game.ts`: ゲーム状態のatom定義
-  - gameDataAtom, shopAtom, handAtom など
+### レイアウト計算
+- 左ペイン: 0px（縮小時） / 220px（展開時）
+- 右ペイン: 0px（縮小時） / 280px（展開時）
+- 下ペイン: 60px（縮小時） / 240px（展開時）
+- 中央ペイン: 残り全幅を自動調整
 
-### 5. コンポーネント作成 (components/)
-- `src/components/ui/` (共通UIコンポーネント)
-  - TechCard.tsx: 技術カード表示
-  - Button.tsx: 共通ボタン
-  - Modal.tsx: モーダル
-- `src/components/game/` (ゲーム固有コンポーネント)
-  - GameStatus.tsx: ターン・スコア・リソース表示
-  - HackathonInfo.tsx: テーマ・方向性表示
-  - Shop.tsx: ショップ機能
-  - Hand.tsx: 手札表示
-  - SelectedCards.tsx: 選択済みカード表示
-  - IdeaInput.tsx: アイデア入力
-  - TechLevels.tsx: 技術レベル表示
-  - EndGameModal.tsx: ゲーム終了モーダル
+## 実装順序
 
-### 6. API処理 (libs/)
-- `src/libs/gemini.ts`: Gemini API呼び出しロジック
-- `src/libs/game.ts`: ゲームロジック（スコア計算など）
+1. **UI状態管理の実装**
+   - paneState atom の作成
+   - ペイン制御ロジック
 
-### 7. メインページ更新
-- `src/app/page.tsx`: ゲームメインページとして再構築
+2. **レイアウトコンポーネントの拡張**
+   - CollapsibleGameLayout の実装
+   - アニメーション対応
 
-### 8. スタイリング調整
-- `src/app/globals.css`: ダークテーマ対応
+3. **プレイヤー情報機能の実装**
+   - プレイヤー状態管理
+   - PlayerInfo/PlayerList コンポーネント
 
-## 関連ファイルパス
-- `/home/yotu/github/democracy-next/sample.html` (移管元)
-- `/home/yotu/github/democracy-next/src/types/game.ts` (新規作成)
-- `/home/yotu/github/democracy-next/src/const/game.ts` (新規作成) 
-- `/home/yotu/github/democracy-next/src/store/game.ts` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/ui/TechCard.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/ui/Button.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/ui/Modal.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/GameStatus.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/HackathonInfo.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/Shop.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/Hand.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/SelectedCards.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/IdeaInput.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/TechLevels.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/EndGameModal.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/libs/gemini.ts` (新規作成)
-- `/home/yotu/github/democracy-next/src/libs/game.ts` (新規作成)
-- `/home/yotu/github/democracy-next/src/app/page.tsx` (更新)
-- `/home/yotu/github/democracy-next/src/app/globals.css` (更新)
-- `/home/yotu/github/democracy-next/package.json` (jotai追加)
+4. **シングルモード統合**
+   - 既存機能との統合
+   - テストと調整
 
-## 技術的考慮点
-- React 19の新機能活用
-- Server Components と Client Components の適切な分離
-- TypeScript 型安全性の確保
-- Jotaiによる効率的な状態更新
-- Tailwind CSS クラスの再利用性
-- APIキーの環境変数化
-- エラーハンドリングの改善
+## アクセシビリティ考慮点
+- キーボードナビゲーション対応
+- スクリーンリーダー対応
+- ペイン状態の視覚的フィードバック
+- 適切な ARIA ラベル設定

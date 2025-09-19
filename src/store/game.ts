@@ -1,6 +1,8 @@
 import { atom } from 'jotai';
-import { GameState, TechCard, HackathonInfo } from '@/types/game';
-import { ALL_TECH_CARDS, THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
+import { GameState, HackathonInfo } from '@/types/game';
+import { generateCardPool, getShuffledPool } from '@/features/card-pool';
+import { THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
+import { TechCard } from '@/features/card-pool';
 
 // 初期状態
 const initialGameState: GameState = {
@@ -8,8 +10,8 @@ const initialGameState: GameState = {
   resource: GAME_CONFIG.INITIAL_RESOURCE,
   score: 0,
   hand: [],
-  shop: [],
-  cardPool: ALL_TECH_CARDS.map(card => ({ ...card, level: 1 })),
+  shop: [], // TODO: features/shop に完全移行後は削除予定
+  cardPool: generateCardPool(),
   techLevels: {},
   hackathonInfo: null,
   selectedCards: [],
@@ -104,8 +106,8 @@ export const initializeGameAtom = atom(null, (get, set) => {
   });
 
   // ショップを生成
-  const shuffledPool = [...ALL_TECH_CARDS].sort(() => 0.5 - Math.random());
-  set(shopAtom, shuffledPool.slice(0, GAME_CONFIG.SHOP_SIZE));
+  const shuffledPool = getShuffledPool({ shuffled: true, size: GAME_CONFIG.SHOP_SIZE });
+  set(shopAtom, shuffledPool);
 });
 
 export const rerollShopAtom = atom(null, (get, set) => {
@@ -114,8 +116,8 @@ export const rerollShopAtom = atom(null, (get, set) => {
 
   set(resourceAtom, state.resource - GAME_CONFIG.REROLL_COST);
   
-  const shuffledPool = [...state.cardPool].sort(() => 0.5 - Math.random());
-  set(shopAtom, shuffledPool.slice(0, GAME_CONFIG.SHOP_SIZE));
+  const shuffledPool = getShuffledPool({ shuffled: true, size: GAME_CONFIG.SHOP_SIZE });
+  set(shopAtom, shuffledPool);
 });
 
 export const buyCardAtom = atom(null, (get, set, cardIndex: number) => {

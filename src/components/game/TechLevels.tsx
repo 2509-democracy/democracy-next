@@ -1,6 +1,6 @@
 import { useAtom } from 'jotai';
 import { techLevelsAtom } from '@/store/game';
-import { ALL_TECH_CARDS } from '@/const/game';
+import { getCardById } from '@/features/card-pool';
 
 export function TechLevels() {
   const [techLevels] = useAtom(techLevelsAtom);
@@ -16,7 +16,7 @@ export function TechLevels() {
       <h2 className="text-xl font-bold mb-4 text-lime-400">技術レベル</h2>
       <div className="flex flex-wrap gap-4">
         {techLevelEntries.map(([techId, level]) => {
-          const tech = ALL_TECH_CARDS.find(c => c.id === techId);
+          const tech = getCardById(techId);
           if (!tech) return null;
           
           return (

@@ -1,4 +1,4 @@
-import { TechCard as TechCardType } from '@/types/game';
+import { TechCard as TechCardType } from '@/features/card-pool';
 
 interface TechCardProps {
   card: TechCardType;
@@ -17,14 +17,14 @@ export function TechCard({
 }: TechCardProps) {
   return (
     <div 
-      className={`relative bg-gray-700 p-4 rounded-lg w-32 cursor-pointer transition-transform duration-200 hover:scale-105 ${className}`}
+      className={`relative bg-white border-2 border-gray-300 p-2 rounded-lg w-40 cursor-pointer transition-transform duration-200 hover:scale-105 hover:border-blue-400 ${className}`}
       onClick={onClick}
     >
-      <div className="font-bold text-center">{card.name}</div>
-      <div className="text-sm text-center text-gray-400">
-        レベル {techLevel ?? card.level}
+      <div className="font-bold text-center text-gray-900 text-s truncate">{card.name}</div>
+      <div className="text-center text-gray-600">
+        Lv.{techLevel ?? card.level}
       </div>
-      <div className="absolute bottom-1 right-1 bg-gray-900 text-xs px-2 py-1 rounded-full">
+      <div className="absolute -top-1 -right-1 bg-gray-800 text-white text-xs px-1 py-0.5 rounded-full">
         {badge}
       </div>
     </div>
