@@ -1,89 +1,91 @@
-# タスク: sample.html を Next.js アプリに移管
+# ゲームロジックをFeatures構造に移行
 
-## 分析結果
+## 分析結果（調査レポート: docs/reports/game-logic-structure-analysis.md）
 
-### 現在のsample.htmlの構造
-- HTML + Tailwind CSS + Vanilla JavaScript で実装されたハッカソンゲーム
-- 状態管理: `gameData`オブジェクト
-- UI更新: DOM操作による動的更新
-- イベント処理: addEventListener での直接的なイベントハンドリング
-- APIコール: Gemini API を使用したAI採点機能
+### 現在の問題点
+- ドメインロジックが技術層別に分散（libs, store, const）
+- プール仕様が複数箇所に散らばっている
+- ビジネスロジックと状態管理が混在
+- 機能変更時に複数ファイルの修正が必要
 
-### 必要な依存関係
-- Jotai (状態管理) - 未インストール
-- 既存: React 19, Next.js 15, TailwindCSS
+### 目標構造
+```
+src/features/
+├── card-pool/           # カードプール機能
+├── shop/               # ショップ機能  
+├── tech-levels/        # 技術レベル機能
+├── hackathon/          # ハッカソン機能
+└── game-core/          # コアゲーム機能
+```
 
 ## 実装計画
 
-### 1. 依存関係インストール
-```bash
-npm install jotai
-```
+### フェーズ1: カードプール機能の分離 (高優先)
+- `src/features/card-pool/constants/cards.ts` - カードマスターデータ移動
+- `src/features/card-pool/services/pool-service.ts` - プール生成ロジック
+- `src/features/card-pool/types.ts` - カード関連型定義
+- `src/features/card-pool/index.ts` - エクスポート
 
-### 2. 型定義作成 (types/)
-- `src/types/game.ts`: ゲーム関連の型定義
-  - TechCard, GameData, HackathonInfo, GamePhase など
+### フェーズ2: ショップ機能の分離 (中優先)  
+- `src/features/shop/services/shop-service.ts` - ショップロジック
+- `src/features/shop/store/shop-atoms.ts` - ショップ状態管理
+- `src/features/shop/components/Shop.tsx` - ショップUI移動
+- `src/features/shop/types.ts` - ショップ関連型
+- `src/features/shop/index.ts` - エクスポート
 
-### 3. 定数定義 (const/)
-- `src/const/game.ts`: ゲーム定数
-  - allTechCards, themes, directions
+### フェーズ3: 技術レベル機能の分離 (中優先)
+- `src/features/tech-levels/services/tech-level-service.ts` - レベル計算ロジック
+- `src/features/tech-levels/store/tech-level-atoms.ts` - 技術レベル状態
+- `src/features/tech-levels/components/TechLevels.tsx` - UI移動
+- `src/features/tech-levels/types.ts` - 技術レベル関連型
+- `src/features/tech-levels/index.ts` - エクスポート
 
-### 4. Jotai状態管理 (store/)
-- `src/store/game.ts`: ゲーム状態のatom定義
-  - gameDataAtom, shopAtom, handAtom など
+### フェーズ4: ハッカソン機能の分離 (低優先)
+- `src/features/hackathon/services/hackathon-service.ts` - ハッカソンロジック
+- `src/features/hackathon/services/evaluation-service.ts` - AI評価処理
+- `src/features/hackathon/store/hackathon-atoms.ts` - ハッカソン状態
+- `src/features/hackathon/components/` - ハッカソンUI移動
+- `src/features/hackathon/constants/themes.ts` - テーマ・方向性定数
+- `src/features/hackathon/types.ts` - ハッカソン関連型
+- `src/features/hackathon/index.ts` - エクスポート
 
-### 5. コンポーネント作成 (components/)
-- `src/components/ui/` (共通UIコンポーネント)
-  - TechCard.tsx: 技術カード表示
-  - Button.tsx: 共通ボタン
-  - Modal.tsx: モーダル
-- `src/components/game/` (ゲーム固有コンポーネント)
-  - GameStatus.tsx: ターン・スコア・リソース表示
-  - HackathonInfo.tsx: テーマ・方向性表示
-  - Shop.tsx: ショップ機能
-  - Hand.tsx: 手札表示
-  - SelectedCards.tsx: 選択済みカード表示
-  - IdeaInput.tsx: アイデア入力
-  - TechLevels.tsx: 技術レベル表示
-  - EndGameModal.tsx: ゲーム終了モーダル
-
-### 6. API処理 (libs/)
-- `src/libs/gemini.ts`: Gemini API呼び出しロジック
-- `src/libs/game.ts`: ゲームロジック（スコア計算など）
-
-### 7. メインページ更新
-- `src/app/page.tsx`: ゲームメインページとして再構築
-
-### 8. スタイリング調整
-- `src/app/globals.css`: ダークテーマ対応
+### フェーズ5: ゲームコア機能の統合 (低優先)
+- `src/features/game-core/services/game-service.ts` - ゲーム進行ロジック
+- `src/features/game-core/store/game-atoms.ts` - 基本ゲーム状態
+- `src/features/game-core/constants/config.ts` - ゲーム設定
+- `src/features/game-core/types.ts` - コアゲーム型
+- `src/features/game-core/index.ts` - エクスポート
 
 ## 関連ファイルパス
-- `/home/yotu/github/democracy-next/sample.html` (移管元)
-- `/home/yotu/github/democracy-next/src/types/game.ts` (新規作成)
-- `/home/yotu/github/democracy-next/src/const/game.ts` (新規作成) 
-- `/home/yotu/github/democracy-next/src/store/game.ts` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/ui/TechCard.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/ui/Button.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/ui/Modal.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/GameStatus.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/HackathonInfo.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/Shop.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/Hand.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/SelectedCards.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/IdeaInput.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/TechLevels.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/components/game/EndGameModal.tsx` (新規作成)
-- `/home/yotu/github/democracy-next/src/libs/gemini.ts` (新規作成)
-- `/home/yotu/github/democracy-next/src/libs/game.ts` (新規作成)
-- `/home/yotu/github/democracy-next/src/app/page.tsx` (更新)
-- `/home/yotu/github/democracy-next/src/app/globals.css` (更新)
-- `/home/yotu/github/democracy-next/package.json` (jotai追加)
+
+### 移行元ファイル
+- `src/const/game.ts` (分割・移動)
+- `src/libs/game.ts` (分割・移動) 
+- `src/libs/gemini.ts` (移動)
+- `src/store/game.ts` (分割・移動)
+- `src/types/game.ts` (分割・移動)
+- `src/components/game/` (一部移動)
+
+### 新規作成するファイル
+- `src/features/card-pool/` (全ファイル)
+- `src/features/shop/` (全ファイル)
+- `src/features/tech-levels/` (全ファイル) 
+- `src/features/hackathon/` (全ファイル)
+- `src/features/game-core/` (全ファイル)
+
+### 更新が必要なファイル
+- `src/app/single-mode/page.tsx` (インポート更新)
+- 各コンポーネントファイル (インポート更新)
+
+## 移行手順
+1. フェーズ1から順番に実装
+2. 各フェーズ完了後にテスト・動作確認
+3. インポートパスの更新
+4. 不要になった元ファイルの削除
+5. コミット
 
 ## 技術的考慮点
-- React 19の新機能活用
-- Server Components と Client Components の適切な分離
-- TypeScript 型安全性の確保
-- Jotaiによる効率的な状態更新
-- Tailwind CSS クラスの再利用性
-- APIキーの環境変数化
-- エラーハンドリングの改善
+- 既存のJotai atoms の依存関係を維持
+- 循環参照を避ける設計
+- TypeScript型定義の整合性確保
+- コンポーネントの動作に影響しない段階的移行

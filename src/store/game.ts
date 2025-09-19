@@ -1,6 +1,8 @@
 import { atom } from 'jotai';
 import { GameState, TechCard, HackathonInfo } from '@/types/game';
-import { ALL_TECH_CARDS, THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
+import { generateCardPool } from '@/features/card-pool';
+import { initializeShopAtom } from '@/features/shop';
+import { THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
 
 // 初期状態
 const initialGameState: GameState = {
@@ -9,7 +11,7 @@ const initialGameState: GameState = {
   score: 0,
   hand: [],
   shop: [],
-  cardPool: ALL_TECH_CARDS.map(card => ({ ...card, level: 1 })),
+  cardPool: generateCardPool(),
   techLevels: {},
   hackathonInfo: null,
   selectedCards: [],
@@ -103,41 +105,20 @@ export const initializeGameAtom = atom(null, (get, set) => {
     hackathonInfo: newHackathonInfo,
   });
 
-  // ショップを生成
-  const shuffledPool = [...ALL_TECH_CARDS].sort(() => 0.5 - Math.random());
-  set(shopAtom, shuffledPool.slice(0, GAME_CONFIG.SHOP_SIZE));
+  // ショップを初期化（新しいショップ機能を使用）
+  // Note: ショップの初期化は別途 initializeShopAtom で行う必要があります
 });
 
 export const rerollShopAtom = atom(null, (get, set) => {
-  const state = get(gameStateAtom);
-  if (state.resource < GAME_CONFIG.REROLL_COST) return;
-
-  set(resourceAtom, state.resource - GAME_CONFIG.REROLL_COST);
-  
-  const shuffledPool = [...state.cardPool].sort(() => 0.5 - Math.random());
-  set(shopAtom, shuffledPool.slice(0, GAME_CONFIG.SHOP_SIZE));
+  // 新しいショップ機能を使用するため、このatomは非推奨
+  // rerollShopActionAtom を使用してください
+  console.warn('rerollShopAtom is deprecated, use rerollShopActionAtom from @/features/shop');
 });
 
 export const buyCardAtom = atom(null, (get, set, cardIndex: number) => {
-  const state = get(gameStateAtom);
-  const card = state.shop[cardIndex];
-  
-  if (!card || state.resource < card.cost) return;
-
-  // リソースを消費
-  set(resourceAtom, state.resource - card.cost);
-  
-  // 手札に追加
-  set(handAtom, [...state.hand, card]);
-  
-  // ショップから削除
-  const newShop = state.shop.filter((_, index) => index !== cardIndex);
-  set(shopAtom, newShop);
-  
-  // 技術レベルを設定
-  const newTechLevels = { ...state.techLevels };
-  newTechLevels[card.id] = newTechLevels[card.id] || card.level;
-  set(techLevelsAtom, newTechLevels);
+  // 新しいショップ機能を使用するため、このatomは非推奨
+  // purchaseCardActionAtom を使用してください
+  console.warn('buyCardAtom is deprecated, use purchaseCardActionAtom from @/features/shop');
 });
 
 export const ideaAtom = atom<string>('');
