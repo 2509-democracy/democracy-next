@@ -1,9 +1,42 @@
 import { useState } from 'react';
+import { useAtom } from 'jotai';
+import { bottomPaneAtom } from '@/store/ui';
 import { Shop } from '@/components/game/Shop';
 import { Hand } from '@/components/game/Hand';
 
 export function ShopHandTabs() {
   const [activeTab, setActiveTab] = useState<'shop' | 'hand'>('shop');
+  const [isBottomPaneOpen] = useAtom(bottomPaneAtom);
+
+  if (!isBottomPaneOpen) {
+    return (
+      <div className="flex items-center gap-4 h-full">
+        <button
+          onClick={() => setActiveTab('shop')}
+          className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+            activeTab === 'shop'
+              ? 'bg-cyan-600 text-white'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+          }`}
+        >
+          ショップ
+        </button>
+        <button
+          onClick={() => setActiveTab('hand')}
+          className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+            activeTab === 'hand'
+              ? 'bg-orange-600 text-white'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+          }`}
+        >
+          手札
+        </button>
+        <span className="text-xs text-gray-500">
+          {activeTab === 'shop' ? 'ショップ' : '手札'}を選択中
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col overflow-hidden">

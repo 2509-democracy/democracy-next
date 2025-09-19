@@ -14,12 +14,13 @@ import {
   isLoadingAtom,
 } from '@/store/game';
 import { initializeShopAtom } from '@/features/shop';
-import { GameLayout } from '@/components/layout/GameLayout';
+import { CollapsibleGameLayout } from '@/components/layout/CollapsibleGameLayout';
 import { GameStatus } from '@/components/game/GameStatus';
 import { HackathonInfo } from '@/components/game/HackathonInfo';
 import { SelectedCards } from '@/components/game/SelectedCards';
 import { IdeaInput } from '@/components/game/IdeaInput';
 import { ScoreSummary } from '@/components/game/ScoreSummary';
+import { PlayerList } from '@/components/game/PlayerList';
 import { ShopHandTabs } from '@/components/game/ShopHandTabs';
 import { EndGameModal } from '@/components/game/EndGameModal';
 import { Button } from '@/components/ui/Button';
@@ -118,7 +119,7 @@ export default function SingleModePage() {
   };
 
   return (
-    <GameLayout
+    <CollapsibleGameLayout
       header={<GameStatus />}
       leftPanel={<ScoreSummary />}
       centerPanel={
@@ -141,6 +142,7 @@ export default function SingleModePage() {
           </Button>
         </div>
       }
+      rightPanel={<PlayerList showCurrentPlayer={true} />}
       bottomPanel={<ShopHandTabs />}
     >
       <EndGameModal
@@ -148,6 +150,6 @@ export default function SingleModePage() {
         finalScore={finalScore}
         onRestart={handleRestart}
       />
-    </GameLayout>
+    </CollapsibleGameLayout>
   );
 }
