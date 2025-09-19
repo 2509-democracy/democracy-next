@@ -19,7 +19,7 @@ export function SelectedCards() {
       <h2 className="text-xl font-bold mb-4 text-rose-400">
         今回のハッカソンで使用する技術 (最大{GAME_CONFIG.MAX_SELECTED_CARDS}枚)
       </h2>
-      <div className="flex flex-wrap gap-4 justify-center h-24 border-2 border-dashed border-gray-600 rounded-lg p-2">
+      <div className="flex flex-wrap gap-4 justify-center h-48 border-2 border-dashed border-gray-600 rounded-lg p-2">
         {selectedCards.map((card, index) => (
           <TechCard
             key={`${card.id}-${index}`}
