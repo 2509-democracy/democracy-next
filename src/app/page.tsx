@@ -1,103 +1,160 @@
-import Image from "next/image";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useAtom } from 'jotai';
+import { 
+  gameStateAtom, 
+  initializeGameAtom, 
+  selectedCardsAtom,
+  ideaAtom,
+  turnAtom,
+  scoreAtom,
+  techLevelsAtom,
+  resourceAtom,
+  isLoadingAtom,
+} from '@/store/game';
+import { GameStatus } from '@/components/game/GameStatus';
+import { HackathonInfo } from '@/components/game/HackathonInfo';
+import { Shop } from '@/components/game/Shop';
+import { Hand } from '@/components/game/Hand';
+import { SelectedCards } from '@/components/game/SelectedCards';
+import { IdeaInput } from '@/components/game/IdeaInput';
+import { TechLevels } from '@/components/game/TechLevels';
+import { EndGameModal } from '@/components/game/EndGameModal';
+import { Button } from '@/components/ui/Button';
+import { evaluateHackathon } from '@/libs/gemini';
+import { 
+  calculateTechLevelBonus, 
+  calculateFinalBonus, 
+  calculateResourceGain,
+  upgradeTechLevels,
+  isGameEnded,
+  canStartHackathon
+} from '@/libs/game';
+import { THEMES, DIRECTIONS } from '@/const/game';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [gameState] = useAtom(gameStateAtom);
+  const [, initializeGame] = useAtom(initializeGameAtom);
+  const [selectedCards, setSelectedCards] = useAtom(selectedCardsAtom);
+  const [idea, setIdea] = useAtom(ideaAtom);
+  const [turn, setTurn] = useAtom(turnAtom);
+  const [score, setScore] = useAtom(scoreAtom);
+  const [techLevels, setTechLevels] = useAtom(techLevelsAtom);
+  const [resource, setResource] = useAtom(resourceAtom);
+  const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
+  
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    initializeGame();
+  }, [initializeGame]);
+
+  const handleStartHackathon = async () => {
+    if (!canStartHackathon(selectedCards, idea) || !gameState.hackathonInfo) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // AI評価を実行
+      const result = await evaluateHackathon({
+        theme: gameState.hackathonInfo.theme,
+        direction: gameState.hackathonInfo.direction,
+        idea,
+        techNames: selectedCards.map(c => c.name),
+      });
+
+      // 技術レベルボーナス計算
+      const techLevelBonus = calculateTechLevelBonus(techLevels);
+      const roundScore = result.score + techLevelBonus;
+      const resourceGain = calculateResourceGain(roundScore);
+
+      // スコア更新
+      setScore(score + roundScore);
+      setResource(resource + resourceGain);
+
+      // 技術レベル更新
+      const newTechLevels = upgradeTechLevels(techLevels, selectedCards);
+      setTechLevels(newTechLevels);
+
+      // カードリセット
+      setSelectedCards([]);
+      setIdea('');
+
+      // 次のターンへ
+      const nextTurn = turn + 1;
+      setTurn(nextTurn);
+
+      if (isGameEnded(nextTurn)) {
+        // ゲーム終了
+        const finalBonus = calculateFinalBonus(newTechLevels);
+        const totalFinalScore = score + roundScore + finalBonus;
+        setFinalScore(totalFinalScore);
+        setShowEndModal(true);
+      } else {
+        // 新しいハッカソン情報生成
+        const newHackathonInfo = {
+          theme: THEMES[Math.floor(Math.random() * THEMES.length)],
+          direction: DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)],
+        };
+        // ここで新しいハッカソン情報をセットする処理が必要
+      }
+    } catch (error) {
+      console.error('Hackathon execution error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRestart = () => {
+    setShowEndModal(false);
+    setFinalScore(0);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold mb-8 text-center text-teal-400">
+          ハッカソン・デベロッパー
+        </h1>
+        
+        <div className="space-y-8">
+          <GameStatus />
+          <HackathonInfo />
+          <Shop />
+          <Hand />
+          
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <SelectedCards />
+            <IdeaInput />
+            
+            <Button
+              variant="danger"
+              size="lg"
+              className="mt-4 w-full"
+              onClick={handleStartHackathon}
+              disabled={
+                !canStartHackathon(selectedCards, idea) || 
+                isLoading || 
+                !gameState.hackathonInfo
+              }
+            >
+              {isLoading ? 'ハッカソン実行中...' : 'ハッカソンを開始'}
+            </Button>
+          </div>
+
+          <TechLevels />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <EndGameModal
+          isOpen={showEndModal}
+          finalScore={finalScore}
+          onRestart={handleRestart}
+        />
+      </div>
     </div>
   );
 }
