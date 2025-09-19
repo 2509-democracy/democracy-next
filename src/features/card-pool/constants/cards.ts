@@ -1,4 +1,4 @@
-import { TechCard } from "@/types/game";
+import { TechCard } from '../types';
 
 export const ALL_TECH_CARDS: TechCard[] = [
   {

@@ -1,13 +1,4 @@
-export interface TechCard {
-  id: string;
-  name: string;
-  category: string;
-  cost: number;
-  level: number;
-  difficulty: number;
-  popularity: number;
-  performance: number;
-}
+import type { TechCard } from '@/features/card-pool';
 
 export interface HackathonInfo {
   theme: string;

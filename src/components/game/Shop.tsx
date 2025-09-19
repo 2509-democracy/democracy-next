@@ -53,7 +53,7 @@ export function Shop() {
           リロール ({GAME_CONFIG.REROLL_COST})
         </Button>
       </div>
-      <div className="flex flex-wrap gap-4 justify-center h-48 border-2 border-dashed border-gray-300 rounded-lg p-2">
+      <div className="flex flex-wrap gap-4 justify-center">
         {shop.map((card, index) => (
           <TechCard
             key={`${card.id}-${index}`}

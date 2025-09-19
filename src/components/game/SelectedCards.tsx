@@ -19,7 +19,7 @@ export function SelectedCards() {
       <h2 className="text-base font-bold mb-3 text-rose-700">
         使用技術 (最大{GAME_CONFIG.MAX_SELECTED_CARDS}枚)
       </h2>
-      <div className="flex flex-wrap gap-4 justify-center h-48 border-2 border-dashed border-rose-300 rounded-lg p-2">
+      <div className="flex flex-wrap gap-2 justify-center min-h-[80px] border-2 border-dashed border-rose-300 rounded-lg p-2">
         {selectedCards.map((card, index) => (
           <TechCard
             key={`${card.id}-${index}`}
