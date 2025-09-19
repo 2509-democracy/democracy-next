@@ -17,7 +17,7 @@ export function TechCard({
 }: TechCardProps) {
   return (
     <div 
-      className={`relative bg-gray-700 p-4 rounded-lg w-32 cursor-pointer transition-transform duration-200 hover:scale-105 ${className}`}
+      className={`relative bg-gray-700 p-7 rounded-lg w-32 cursor-pointer transition-transform duration-200 hover:scale-105 ${className}`}
       onClick={onClick}
     >
       <div className="font-bold text-center">{card.name}</div>
