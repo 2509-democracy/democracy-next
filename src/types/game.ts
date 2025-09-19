@@ -1,4 +1,13 @@
-import type { TechCard } from '@/features/card-pool';
+export interface TechCard {
+  id: string;
+  name: string;
+  category: string;
+  cost: number;
+  level: number;
+  difficulty: number;
+  popularity: number;
+  performance: number;
+}
 
 export interface HackathonInfo {
   theme: string;
@@ -17,7 +26,7 @@ export interface GameData {
   selectedCards: TechCard[];
 }
 
-export type GamePhase = 'preparation' | 'execution' | 'result' | 'ended';
+export type GamePhase = "preparation" | "execution" | "result" | "ended";
 
 export interface GameState extends GameData {
   phase: GamePhase;
