@@ -9,14 +9,16 @@ export function HackathonInfo() {
   }
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-bold mb-4 text-purple-400">今回のハッカソン</h2>
-      <div className="text-lg">
-        <div className="mb-2">
-          テーマ: <span className="font-bold text-white">{hackathonInfo.theme}</span>
+    <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+      <h2 className="text-lg font-bold mb-3 text-purple-700">今回のハッカソン</h2>
+      <div className="space-y-2">
+        <div className="text-sm">
+          <span className="font-medium text-gray-600">テーマ:</span>
+          <span className="font-bold text-gray-900 ml-2">{hackathonInfo.theme}</span>
         </div>
-        <div>
-          方向性: <span className="font-bold text-white">{hackathonInfo.direction}</span>
+        <div className="text-sm">
+          <span className="font-medium text-gray-600">方向性:</span>
+          <span className="font-bold text-gray-900 ml-2">{hackathonInfo.direction}</span>
         </div>
       </div>
     </div>

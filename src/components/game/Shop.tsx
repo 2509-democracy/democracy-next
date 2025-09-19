@@ -37,9 +37,19 @@ export function Shop() {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-bold mb-4 text-cyan-400">ショップ</h2>
-      <div className="flex flex-wrap gap-4 justify-center mb-4">
+    <div>
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-lg font-bold text-cyan-700">ショップ</h2>
+        <Button 
+          variant="primary"
+          size="sm"
+          onClick={handleReroll}
+          disabled={resource < GAME_CONFIG.REROLL_COST}
+        >
+          リロール ({GAME_CONFIG.REROLL_COST})
+        </Button>
+      </div>
+      <div className="flex flex-wrap gap-2 justify-center">
         {shop.map((card, index) => (
           <TechCard
             key={`${card.id}-${index}`}
@@ -48,15 +58,6 @@ export function Shop() {
             className={resource < card.cost ? 'opacity-50 cursor-not-allowed' : ''}
           />
         ))}
-      </div>
-      <div className="flex justify-center space-x-4">
-        <Button 
-          variant="primary"
-          onClick={handleReroll}
-          disabled={resource < GAME_CONFIG.REROLL_COST}
-        >
-          リロール ({GAME_CONFIG.REROLL_COST} リソース)
-        </Button>
       </div>
     </div>
   );

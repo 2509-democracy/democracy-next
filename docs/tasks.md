@@ -1,91 +1,82 @@
-# ゲームロジックをFeatures構造に移行
+# レイアウト整理計画
 
-## 分析結果（調査レポート: docs/reports/game-logic-structure-analysis.md）
+## 現在の問題点
+- 縦長レイアウトでスクロールが必要
+- 不要なタイトル「ハッカソン・デベロッパー」が表示されている
+- 情報が散らばっていて視認性が低い
+- スペース効率が悪い
 
-### 現在の問題点
-- ドメインロジックが技術層別に分散（libs, store, const）
-- プール仕様が複数箇所に散らばっている
-- ビジネスロジックと状態管理が混在
-- 機能変更時に複数ファイルの修正が必要
+## 新しいレイアウト設計
 
-### 目標構造
+### 全体構成
 ```
-src/features/
-├── card-pool/           # カードプール機能
-├── shop/               # ショップ機能  
-├── tech-levels/        # 技術レベル機能
-├── hackathon/          # ハッカソン機能
-└── game-core/          # コアゲーム機能
+┌─────────────────────────────────────────────────────────┐
+│ 上部ヘッダー（ターン・スコア・リソース）                │
+├─────────────────┬─────────────────┬─────────────────────┤
+│ 左ペイン        │ 中央ペイン      │ 右ペイン            │
+│ - 現在のスコア  │ - ハッカソン情報│ （予約）            │
+│ - 技術レベル    │ - 選択カード    │                     │
+│                 │ - アイデア入力  │                     │
+│                 │ - 開始ボタン    │                     │
+├─────────────────┴─────────────────┴─────────────────────┤
+│ 下部ペイン（ショップ・手札の切り替えタブ）              │
+└─────────────────────────────────────────────────────────┘
 ```
+
+### 詳細設計
+
+#### 上部ヘッダー
+- 高さ固定（80px程度）
+- ターン、スコア、リソースを横並び表示
+- タイトル削除
+
+#### 左ペイン（幅: 250px）
+- 現在のスコア詳細表示
+- 技術レベル表示（コンパクト版）
+- 固定幅でスクロール対応
+
+#### 中央ペイン（残り幅）
+- ハッカソン情報（テーマ・方向性）
+- 選択済み技術カード表示
+- アイデア入力欄
+- ハッカソン開始ボタン
+
+#### 下部ペイン（高さ: 300px程度）
+- タブ切り替え：「ショップ」「手札」
+- 固定高でスクロール対応
 
 ## 実装計画
 
-### フェーズ1: カードプール機能の分離 (高優先)
-- `src/features/card-pool/constants/cards.ts` - カードマスターデータ移動
-- `src/features/card-pool/services/pool-service.ts` - プール生成ロジック
-- `src/features/card-pool/types.ts` - カード関連型定義
-- `src/features/card-pool/index.ts` - エクスポート
+### フェーズ1: レイアウト構造の変更
+- SingleModePage のレイアウトを3ペイン構造に変更
+- CSS Grid を使用したレスポンシブ設計
+- 高さ固定でビューポート内に収める
 
-### フェーズ2: ショップ機能の分離 (中優先)  
-- `src/features/shop/services/shop-service.ts` - ショップロジック
-- `src/features/shop/store/shop-atoms.ts` - ショップ状態管理
-- `src/features/shop/components/Shop.tsx` - ショップUI移動
-- `src/features/shop/types.ts` - ショップ関連型
-- `src/features/shop/index.ts` - エクスポート
+### フェーズ2: コンポーネントの調整
+- GameStatus を上部ヘッダー用に最適化
+- 新しい ScoreSummary コンポーネント作成（左ペイン用）
+- TechLevels をコンパクト表示対応
+- ショップ・手札の切り替えタブ機能追加
 
-### フェーズ3: 技術レベル機能の分離 (中優先)
-- `src/features/tech-levels/services/tech-level-service.ts` - レベル計算ロジック
-- `src/features/tech-levels/store/tech-level-atoms.ts` - 技術レベル状態
-- `src/features/tech-levels/components/TechLevels.tsx` - UI移動
-- `src/features/tech-levels/types.ts` - 技術レベル関連型
-- `src/features/tech-levels/index.ts` - エクスポート
+### フェーズ3: レスポンシブ対応
+- モバイル表示時の調整
+- タブレット表示時の調整
 
-### フェーズ4: ハッカソン機能の分離 (低優先)
-- `src/features/hackathon/services/hackathon-service.ts` - ハッカソンロジック
-- `src/features/hackathon/services/evaluation-service.ts` - AI評価処理
-- `src/features/hackathon/store/hackathon-atoms.ts` - ハッカソン状態
-- `src/features/hackathon/components/` - ハッカソンUI移動
-- `src/features/hackathon/constants/themes.ts` - テーマ・方向性定数
-- `src/features/hackathon/types.ts` - ハッカソン関連型
-- `src/features/hackathon/index.ts` - エクスポート
+## 関連ファイル
 
-### フェーズ5: ゲームコア機能の統合 (低優先)
-- `src/features/game-core/services/game-service.ts` - ゲーム進行ロジック
-- `src/features/game-core/store/game-atoms.ts` - 基本ゲーム状態
-- `src/features/game-core/constants/config.ts` - ゲーム設定
-- `src/features/game-core/types.ts` - コアゲーム型
-- `src/features/game-core/index.ts` - エクスポート
-
-## 関連ファイルパス
-
-### 移行元ファイル
-- `src/const/game.ts` (分割・移動)
-- `src/libs/game.ts` (分割・移動) 
-- `src/libs/gemini.ts` (移動)
-- `src/store/game.ts` (分割・移動)
-- `src/types/game.ts` (分割・移動)
-- `src/components/game/` (一部移動)
+### 更新するファイル
+- `src/app/single-mode/page.tsx` - メインレイアウト
+- `src/components/game/GameStatus.tsx` - ヘッダー用に最適化
+- `src/components/game/TechLevels.tsx` - コンパクト表示対応
 
 ### 新規作成するファイル
-- `src/features/card-pool/` (全ファイル)
-- `src/features/shop/` (全ファイル)
-- `src/features/tech-levels/` (全ファイル) 
-- `src/features/hackathon/` (全ファイル)
-- `src/features/game-core/` (全ファイル)
-
-### 更新が必要なファイル
-- `src/app/single-mode/page.tsx` (インポート更新)
-- 各コンポーネントファイル (インポート更新)
-
-## 移行手順
-1. フェーズ1から順番に実装
-2. 各フェーズ完了後にテスト・動作確認
-3. インポートパスの更新
-4. 不要になった元ファイルの削除
-5. コミット
+- `src/components/game/ScoreSummary.tsx` - 左ペイン用スコア表示
+- `src/components/game/ShopHandTabs.tsx` - ショップ・手札切り替えタブ
+- `src/components/layout/GameLayout.tsx` - レイアウトコンポーネント
 
 ## 技術的考慮点
-- 既存のJotai atoms の依存関係を維持
-- 循環参照を避ける設計
-- TypeScript型定義の整合性確保
-- コンポーネントの動作に影響しない段階的移行
+- CSS Grid によるレイアウト
+- 固定高・固定幅での適切なスクロール処理
+- コンポーネント間の適切な状態共有
+- アクセシビリティ（タブナビゲーション等）
+- パフォーマンス（必要な部分のみ再描画）

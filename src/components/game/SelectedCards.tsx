@@ -15,11 +15,11 @@ export function SelectedCards() {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-bold mb-4 text-rose-400">
-        今回のハッカソンで使用する技術 (最大{GAME_CONFIG.MAX_SELECTED_CARDS}枚)
+    <div className="bg-rose-50 p-3 rounded-lg border border-rose-200">
+      <h2 className="text-base font-bold mb-3 text-rose-700">
+        使用技術 (最大{GAME_CONFIG.MAX_SELECTED_CARDS}枚)
       </h2>
-      <div className="flex flex-wrap gap-4 justify-center h-24 border-2 border-dashed border-gray-600 rounded-lg p-2">
+      <div className="flex flex-wrap gap-2 justify-center min-h-[80px] border-2 border-dashed border-rose-300 rounded-lg p-2">
         {selectedCards.map((card, index) => (
           <TechCard
             key={`${card.id}-${index}`}

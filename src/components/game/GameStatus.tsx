@@ -8,17 +8,19 @@ export function GameStatus() {
   const [score] = useAtom(scoreAtom);
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <div className="flex justify-between items-center mb-4">
-        <div className="text-2xl">
-          ターン <span className="font-bold text-teal-300">{turn}</span> / {GAME_CONFIG.MAX_TURNS}
-        </div>
-        <div className="text-2xl">
-          スコア <span className="font-bold text-yellow-400">{score}</span>
-        </div>
-        <div className="text-2xl">
-          リソース <span className="font-bold text-lime-400">{resource}</span>
-        </div>
+    <div className="flex items-center gap-8">
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-gray-600">ターン</span>
+        <span className="text-lg font-bold text-teal-600">{turn}</span>
+        <span className="text-sm text-gray-500">/ {GAME_CONFIG.MAX_TURNS}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-gray-600">スコア</span>
+        <span className="text-lg font-bold text-yellow-600">{score}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-gray-600">リソース</span>
+        <span className="text-lg font-bold text-lime-600">{resource}</span>
       </div>
     </div>
   );

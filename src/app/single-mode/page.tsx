@@ -14,13 +14,13 @@ import {
   isLoadingAtom,
 } from '@/store/game';
 import { initializeShopAtom } from '@/features/shop';
+import { GameLayout } from '@/components/layout/GameLayout';
 import { GameStatus } from '@/components/game/GameStatus';
 import { HackathonInfo } from '@/components/game/HackathonInfo';
-import { Shop } from '@/components/game/Shop';
-import { Hand } from '@/components/game/Hand';
 import { SelectedCards } from '@/components/game/SelectedCards';
 import { IdeaInput } from '@/components/game/IdeaInput';
-import { TechLevels } from '@/components/game/TechLevels';
+import { ScoreSummary } from '@/components/game/ScoreSummary';
+import { ShopHandTabs } from '@/components/game/ShopHandTabs';
 import { EndGameModal } from '@/components/game/EndGameModal';
 import { Button } from '@/components/ui/Button';
 import { evaluateHackathon } from '@/libs/gemini';
@@ -118,46 +118,36 @@ export default function SingleModePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center text-teal-400">
-          ハッカソン・デベロッパー（シングルモード）
-        </h1>
-        
-        <div className="space-y-8">
-          <GameStatus />
+    <GameLayout
+      header={<GameStatus />}
+      leftPanel={<ScoreSummary />}
+      centerPanel={
+        <div className="space-y-4">
           <HackathonInfo />
-          <Shop />
-          <Hand />
-          
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-            <SelectedCards />
-            <IdeaInput />
-            
-            <Button
-              variant="danger"
-              size="lg"
-              className="mt-4 w-full"
-              onClick={handleStartHackathon}
-              disabled={
-                !canStartHackathon(selectedCards, idea) || 
-                isLoading || 
-                !gameState.hackathonInfo
-              }
-            >
-              {isLoading ? 'ハッカソン実行中...' : 'ハッカソンを開始'}
-            </Button>
-          </div>
-
-          <TechLevels />
+          <SelectedCards />
+          <IdeaInput />
+          <Button
+            variant="danger"
+            size="lg"
+            className="w-full"
+            onClick={handleStartHackathon}
+            disabled={
+              !canStartHackathon(selectedCards, idea) || 
+              isLoading || 
+              !gameState.hackathonInfo
+            }
+          >
+            {isLoading ? 'ハッカソン実行中...' : 'ハッカソンを開始'}
+          </Button>
         </div>
-
-        <EndGameModal
-          isOpen={showEndModal}
-          finalScore={finalScore}
-          onRestart={handleRestart}
-        />
-      </div>
-    </div>
+      }
+      bottomPanel={<ShopHandTabs />}
+    >
+      <EndGameModal
+        isOpen={showEndModal}
+        finalScore={finalScore}
+        onRestart={handleRestart}
+      />
+    </GameLayout>
   );
 }

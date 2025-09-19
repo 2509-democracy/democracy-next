@@ -19,9 +19,9 @@ export function Hand() {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-bold mb-4 text-orange-400">手札</h2>
-      <div className="flex flex-wrap gap-4 justify-center">
+    <div>
+      <h2 className="text-lg font-bold mb-3 text-orange-700">手札</h2>
+      <div className="flex flex-wrap gap-2 justify-center">
         {hand.map((card, index) => (
           <TechCard
             key={`${card.id}-${index}`}
