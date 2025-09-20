@@ -191,10 +191,10 @@ const initialMultiGameState: MultiGameState = {
   players: [],
   currentPlayerId: '',
   gameStarted: false,
-  currentPhase: 'matching',
+  currentPhase: 'waiting',
   timeLeft: 0,
   isTimerActive: false,
-  phaseMessage: 'プレイヤーを待っています...',
+  phaseMessage: 'ゲームの準備をしています...',
   currentRound: 1,
   maxRounds: GAME_CONFIG.MAX_TURNS,
   roundResults: [],
@@ -225,8 +225,8 @@ export const initializeMultiGameAtom = atom(
       players,
       currentPlayerId: playerId,
       gameStarted: false, // matchingフェーズではまだゲーム開始していない
-      currentPhase: 'matching',
-      phaseMessage: 'プレイヤーを待っています...',
+      currentPhase: 'waiting',
+      phaseMessage: 'ゲームの準備をしています...',
     });
     
     // 現在のプレイヤーの状態をゲーム状態に反映
@@ -286,6 +286,7 @@ export const setPhaseAtom = atom(
   (get, set, phase: MultiGamePhase, message?: string) => {
     const multiState = get(multiGameStateAtom);
     const phaseMessages: Record<MultiGamePhase, string> = {
+      waiting: 'ゲームの準備をしています...',
       matching: 'プレイヤーを待っています...',
       preparation: '準備フェーズ - アイデアを考えよう！',
       submission_review: 'お題が出そろいました！',
