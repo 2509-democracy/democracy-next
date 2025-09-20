@@ -1,4 +1,5 @@
 import { useAtom } from 'jotai';
+import { useState, useEffect } from 'react';
 import { multiGameStateAtom } from '@/store/game';
 import { Button } from '../ui/Button';
 import { TechCard } from '../ui/TechCard';
@@ -22,6 +23,28 @@ interface PlayerResult {
 
 export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
   const [multiGameState] = useAtom(multiGameStateAtom);
+  const [timeLeft, setTimeLeft] = useState(60); // 60秒のタイマー
+  
+  // 60秒のカウントダウンタイマー
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          // タイマー終了時に自動で次のラウンドに進む
+          const isLastRound = multiGameState.currentRound >= multiGameState.maxRounds;
+          if (isLastRound) {
+            onFinishGame();
+          } else {
+            onNextRound();
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [multiGameState.currentRound, multiGameState.maxRounds, onNextRound, onFinishGame]);
   
   // プレイヤー結果を生成（実際のデータを使用）
   const playerResults: PlayerResult[] = multiGameState.players
@@ -66,9 +89,17 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
           🎊 第{multiGameState.currentRound}ラウンド結果
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-600 mb-3">
           {isLastRound ? '最終ラウンドの結果です！' : `残り${multiGameState.maxRounds - multiGameState.currentRound}ラウンド`}
         </p>
+        
+        {/* タイマー表示 */}
+        <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-4 py-2 rounded-lg font-medium">
+          <span className="text-sm">⏰ 自動進行まで</span>
+          <span className={`text-lg font-bold ${timeLeft <= 10 ? 'text-red-600' : 'text-orange-800'}`}>
+            {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+          </span>
+        </div>
       </div>
       
       {/* ラウンド情報 */}
@@ -173,24 +204,33 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
       </div>
       
       {/* 進行ボタン */}
-      <div className="flex justify-center gap-4 pt-6">
-        {!isLastRound ? (
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={onNextRound}
-          >
-            次のラウンドへ進む
-          </Button>
-        ) : (
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={onFinishGame}
-          >
-            最終結果を確認
-          </Button>
-        )}
+      <div className="flex flex-col items-center gap-3 pt-6">
+        <div className="flex justify-center gap-4">
+          {!isLastRound ? (
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={onNextRound}
+            >
+              🚀 次のラウンドへ進む
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={onFinishGame}
+            >
+              🏆 最終結果を確認
+            </Button>
+          )}
+        </div>
+        
+        <p className="text-xs text-gray-500 text-center">
+          {timeLeft > 0 
+            ? `${timeLeft}秒後に自動進行します（手動で進むこともできます）`
+            : '自動進行中...'
+          }
+        </p>
       </div>
       
       {/* 次ラウンドの情報 */}
