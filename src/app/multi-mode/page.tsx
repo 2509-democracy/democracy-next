@@ -19,16 +19,19 @@ import {
   startTimerAtom,
   stopTimerAtom,
   updateTimerAtom,
+  setPhaseAtom,
+  togglePlayerReadyAtom,
+  checkAllReadyAtom,
   MultiPlayer,
 } from '@/store/game';
 import { initializeShopAtom } from '@/features/shop';
 import { CollapsibleGameLayout } from '@/components/layout/CollapsibleGameLayout';
-import { MultiGameStatus } from '@/components/multi/MultiGameStatus';
+import { GameStatus } from '@/components/game/GameStatus';
 import { HackathonInfo } from '@/components/game/HackathonInfo';
 import { SelectedCards } from '@/components/game/SelectedCards';
 import { IdeaInput } from '@/components/game/IdeaInput';
-import { MultiScoreSummary } from '@/components/multi/MultiScoreSummary';
-import { MultiPlayerList } from '@/components/multi/MultiPlayerList';
+import { ScoreSummary } from '@/components/game/ScoreSummary';
+import { PlayerList } from '@/components/game/PlayerList';
 import { ShopHandTabs } from '@/components/game/ShopHandTabs';
 import { EndGameModal } from '@/components/game/EndGameModal';
 import { Button } from '@/components/ui/Button';
@@ -82,6 +85,9 @@ export default function MultiModePage() {
   const [, startTimer] = useAtom(startTimerAtom);
   const [, stopTimer] = useAtom(stopTimerAtom);
   const [, updateTimer] = useAtom(updateTimerAtom);
+  const [, setPhase] = useAtom(setPhaseAtom);
+  const [, togglePlayerReady] = useAtom(togglePlayerReadyAtom);
+  const [allReady] = useAtom(checkAllReadyAtom);
   
   const [showEndModal, setShowEndModal] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
@@ -173,14 +179,7 @@ export default function MultiModePage() {
 
   const handleReadyToggle = () => {
     if (currentPlayer) {
-      setMultiState(prev => ({
-        ...prev,
-        players: prev.players.map(player => 
-          player.id === currentPlayer.id 
-            ? { ...player, isReady: !player.isReady }
-            : player
-        )
-      }));
+      togglePlayerReady(currentPlayer.id);
     }
   };
 
@@ -190,9 +189,12 @@ export default function MultiModePage() {
     }
 
     setIsLoading(true);
-    setMultiState(prev => ({ ...prev, currentPhase: 'execution' }));
+    setPhase('execution', 'ハッカソン実行中...');
 
     try {
+      // 評価フェーズに遷移
+      setPhase('evaluation', 'AI評価中...');
+
       // AI評価を実行
       const result = await evaluateHackathon({
         theme: gameState.hackathonInfo.theme,
@@ -216,6 +218,9 @@ export default function MultiModePage() {
       const newTechLevels = upgradeTechLevels(techLevels, selectedCards);
       setTechLevels(newTechLevels);
 
+      // 結果フェーズに遷移
+      setPhase('result', '結果発表！');
+
       // マルチプレイヤー状態も更新
       setMultiState(prev => ({
         ...prev,
@@ -235,8 +240,7 @@ export default function MultiModePage() {
                 score: player.score + Math.floor(Math.random() * 50) + 20, // ダミーAIのスコア
                 isReady: false,
               }
-        ),
-        currentPhase: 'result'
+        )
       }));
 
       // カードリセット
@@ -302,13 +306,13 @@ export default function MultiModePage() {
     <CollapsibleGameLayout
       header={
         <div className="flex items-center justify-between w-full">
-          <MultiGameStatus />
+          <GameStatus isMultiMode={true} />
           <Button variant="secondary" onClick={handleBackToHome}>
             ホームに戻る
           </Button>
         </div>
       }
-      leftPanel={<MultiScoreSummary />}
+      leftPanel={<ScoreSummary isMultiMode={true} />}
       centerPanel={
         <div className="space-y-4">
           <HackathonInfo />
@@ -316,6 +320,13 @@ export default function MultiModePage() {
           <IdeaInput />
           
           <div className="space-y-2">
+            {/* フェーズメッセージを大きく表示 */}
+            <div className="text-center py-3 bg-blue-50 rounded-lg">
+              <h2 className="text-lg font-bold text-blue-700">
+                {multiState.phaseMessage}
+              </h2>
+            </div>
+
             {multiState.currentPhase === 'preparation' && (
               <>
                 <Button
@@ -341,6 +352,17 @@ export default function MultiModePage() {
                 </Button>
               </>
             )}
+
+            {multiState.currentPhase === 'hackathon_ready' && (
+              <div className="text-center py-6">
+                <div className="text-2xl font-bold text-green-600 mb-2">
+                  🎉 お題が出そろいました！
+                </div>
+                <div className="text-sm text-gray-600">
+                  まもなくハッカソンが始まります...
+                </div>
+              </div>
+            )}
             
             {multiState.currentPhase === 'execution' && (
               <div className="text-center py-4">
@@ -353,20 +375,42 @@ export default function MultiModePage() {
               </div>
             )}
             
+            {multiState.currentPhase === 'evaluation' && (
+              <div className="text-center py-4">
+                <div className="animate-pulse text-lg font-semibold text-orange-600">
+                  AI評価中...
+                </div>
+                <div className="text-sm text-gray-500 mt-2">
+                  あなたのアイデアを評価しています
+                </div>
+              </div>
+            )}
+
             {multiState.currentPhase === 'result' && (
               <div className="text-center py-4">
                 <div className="text-lg font-semibold text-green-600 mb-2">
-                  結果発表中
+                  🎊 結果発表！
                 </div>
                 <div className="text-sm text-gray-500">
                   次のターンまであと {multiState.timeLeft} 秒
                 </div>
               </div>
             )}
+
+            {multiState.currentPhase === 'ranking' && (
+              <div className="text-center py-4">
+                <div className="text-xl font-bold text-purple-600 mb-2">
+                  🏆 最終ランキング
+                </div>
+                <div className="text-sm text-gray-500">
+                  ゲーム終了です！
+                </div>
+              </div>
+            )}
           </div>
         </div>
       }
-      rightPanel={<MultiPlayerList />}
+      rightPanel={<PlayerList isMultiMode={true} />}
       bottomPanel={<ShopHandTabs />}
     >
       <EndGameModal

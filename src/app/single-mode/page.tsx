@@ -12,6 +12,7 @@ import {
   techLevelsAtom,
   resourceAtom,
   isLoadingAtom,
+  multiGameStateAtom,
 } from '@/store/game';
 import { initializeShopAtom } from '@/features/shop';
 import { CollapsibleGameLayout } from '@/components/layout/CollapsibleGameLayout';
@@ -46,14 +47,60 @@ export default function SingleModePage() {
   const [techLevels, setTechLevels] = useAtom(techLevelsAtom);
   const [resource, setResource] = useAtom(resourceAtom);
   const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
+  const [multiGameState, setMultiGameState] = useAtom(multiGameStateAtom);
   
   const [showEndModal, setShowEndModal] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
 
+  // シングルモードを「一人用マルチモード」として初期化
   useEffect(() => {
     initializeGame();
     initializeShop(GAME_CONFIG.SHOP_SIZE);
-  }, [initializeGame, initializeShop]);
+    
+    // 一人用マルチモードとして初期化
+    const singlePlayer = {
+      id: 'single-player',
+      name: 'あなた',
+      score: 0,
+      resource: GAME_CONFIG.INITIAL_RESOURCE,
+      techLevels: {},
+      hand: [],
+      selectedCards: [],
+      idea: '',
+      isReady: false,
+      isConnected: true,
+    };
+    
+    setMultiGameState({
+      mode: 'single',
+      players: [singlePlayer],
+      currentPlayerId: 'single-player',
+      gameStarted: true,
+      currentPhase: 'preparation',
+      timeLeft: 0,
+      isTimerActive: false,
+    });
+  }, [initializeGame, initializeShop, setMultiGameState]);
+
+  // マルチモード状態をシングルプレイヤーの状態と同期
+  useEffect(() => {
+    if (multiGameState.players.length > 0) {
+      const player = multiGameState.players[0];
+      const updatedPlayer = {
+        ...player,
+        score,
+        resource,
+        techLevels,
+        selectedCards,
+        idea,
+      };
+      
+      setMultiGameState({
+        ...multiGameState,
+        players: [updatedPlayer],
+      });
+    }
+  }, [score, resource, techLevels, selectedCards, idea]); // setMultiGameState, multiGameStateは除く
 
   const handleStartHackathon = async () => {
     if (!canStartHackathon(selectedCards, idea) || !gameState.hackathonInfo) {
@@ -120,8 +167,8 @@ export default function SingleModePage() {
 
   return (
     <CollapsibleGameLayout
-      header={<GameStatus />}
-      leftPanel={<ScoreSummary />}
+      header={<GameStatus isMultiMode={true} />}
+      leftPanel={<ScoreSummary isMultiMode={true} />}
       centerPanel={
         <div className="space-y-4">
           <HackathonInfo />
@@ -142,7 +189,7 @@ export default function SingleModePage() {
           </Button>
         </div>
       }
-      rightPanel={<PlayerList showCurrentPlayer={true} />}
+      rightPanel={<PlayerList isMultiMode={true} />}
       bottomPanel={<ShopHandTabs />}
     >
       <EndGameModal
