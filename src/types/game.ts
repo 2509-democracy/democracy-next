@@ -1,4 +1,4 @@
-import type { TechCard } from '@/features/card-pool';
+import type { TechCard } from "@/features/card-pool";
 
 export interface HackathonInfo {
   theme: string;
@@ -20,13 +20,13 @@ export interface GameData {
 export type GamePhase = "preparation" | "execution" | "result" | "ended";
 
 // マルチフェーズゲーム用の拡張GamePhase
-export type MultiGamePhase = 
-  | 'matching'           // マッチング待機
-  | 'preparation'        // 準備フェーズ
-  | 'submission_review'  // お題・技術確認
-  | 'ai_evaluation'      // AI評価中
-  | 'round_result'       // ラウンド結果
-  | 'final_ranking'      // 最終結果
+export type MultiGamePhase =
+  | "matching" // マッチング待機
+  | "preparation" // 準備フェーズ
+  | "submission_review" // お題・技術確認
+  | "ai_evaluation" // AI評価中
+  | "round_result" // ラウンド結果
+  | "final_ranking"; // 最終結果
 
 export interface GameState extends GameData {
   phase: GamePhase;
@@ -83,5 +83,6 @@ export interface AIEvaluationRequest {
 }
 
 export interface AIEvaluationResponse {
-  score: number;
+  score: number; // 合計点（100点満点）
+  response: string; // AIレスポンスのテキストそのもの
 }
