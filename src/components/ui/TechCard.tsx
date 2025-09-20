@@ -39,6 +39,15 @@ export function TechCard({
       >
         {card.category}
       </div>
+      {/* アイコン画像表示（中央上部） */}
+      {card.icon && (
+        <img
+          src={card.icon}
+          alt={card.name + " icon"}
+          className="mx-auto mt-2 mb-1 w-8 h-8 object-contain"
+          style={{ display: "block" }}
+        />
+      )}
       <div className="font-bold text-center text-gray-900 text-base truncate mb-1 mt-6">
         {card.name}
       </div>

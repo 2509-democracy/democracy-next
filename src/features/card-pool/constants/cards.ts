@@ -10,6 +10,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 2,
     popularity: 3,
     performance: 2,
+    icon: "/tech_icons/react.svg",
   },
   {
     id: "vue",
@@ -20,6 +21,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 1,
     popularity: 2,
     performance: 2,
+    icon: "/tech_icons/vuejs.svg",
   },
   {
     id: "express",
@@ -30,6 +32,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 1,
     popularity: 3,
     performance: 2,
+    icon: "/tech_icons/express.svg",
   },
   {
     id: "django",
@@ -40,6 +43,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 2,
     popularity: 2,
     performance: 2,
+    icon: "/tech_icons/django.svg",
   },
   {
     id: "tensorflow",
@@ -50,6 +54,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 3,
     popularity: 3,
     performance: 3,
+    icon: "/tech_icons/tensorflow.svg",
   },
   {
     id: "pytorch",
@@ -60,6 +65,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 2,
     popularity: 3,
     performance: 3,
+    icon: "/tech_icons/pytorch.png",
   },
   {
     id: "fastapi",
@@ -70,6 +76,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 1,
     popularity: 2,
     performance: 3,
+    icon: "/tech_icons/fastapi.png",
   },
   {
     id: "jwt",
@@ -80,6 +87,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 1,
     popularity: 2,
     performance: 2,
+    icon: "/tech_icons/jwt.png",
   },
   {
     id: "redis",
@@ -90,6 +98,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 1,
     popularity: 3,
     performance: 3,
+    icon: "/tech_icons/radis.png",
   },
   {
     id: "oauth",
@@ -100,6 +109,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 3,
     popularity: 2,
     performance: 1,
+    icon: "/tech_icons/oauth.png",
   },
   {
     id: "nextjs",
@@ -110,6 +120,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 3,
     popularity: 3,
     performance: 3,
+    icon: "/tech_icons/nextjs.svg",
   },
   {
     id: "threejs",
@@ -120,6 +131,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 3,
     popularity: 1,
     performance: 1,
+    icon: "/tech_icons/threejs.png",
   },
   {
     id: "websocket",
@@ -130,5 +142,6 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 2,
     popularity: 2,
     performance: 3,
+    icon: "/tech_icons/websocket.svg",
   },
 ];
