@@ -33,6 +33,8 @@ export function Button({
     <button
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       disabled={disabled}
+      // 明示的にbuttonタイプを指定（フォーム内での誤送信防止）
+      type={(props as any).type ?? 'button'}
       {...props}
     >
       {children}
