@@ -51,9 +51,6 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
               </div>
               <div className="flex items-center gap-4 text-xs">
                 <span className="text-yellow-600">{player.score}pt</span>
-                <span className={`px-2 py-1 rounded ${player.isReady ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                  {player.isReady ? '準備完了' : '準備中'}
-                </span>
               </div>
             </div>
           ))}

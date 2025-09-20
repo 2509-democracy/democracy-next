@@ -1,7 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/Button";
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
+import Image from 'next/image';
 
 export default function Home() {
   const router = useRouter();
@@ -15,17 +16,19 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center">
-      <div className="max-w-md mx-auto flex flex-col items-center space-y-8">
-        <h1 className="text-5xl font-bold text-teal-400 dela-gothic-one-regular whitespace-nowrap text-center w-full">
-          ハッカソン・デベロッパー
-        </h1>
+    <div className="min-h-screen bg-white text-gray-100 flex items-center justify-center">
+      <div className="max-w-md mx-auto text-center space-y-8">
+        <div className="flex justify-center">
+          <Image 
+            src="/logo_fulfilled.png" 
+            alt="ハッカソン・デベロッパー" 
+            width={500} 
+            height={120}
+            className="max-w-full h-auto"
+          />
+        </div>
 
-        <p className="text-xl text-gray-300 yusei-magic-regular text-center w-full">
-          ゲームモードを選択してください
-        </p>
-
-        <div className="space-y-4 w-full flex flex-col items-center">
+        <div className="space-y-4">
           <Button
             variant="primary"
             size="lg"
@@ -43,11 +46,6 @@ export default function Home() {
           >
             マルチモード
           </Button>
-        </div>
-
-        <div className="mt-12 text-sm text-gray-500 yusei-magic-regular text-center w-full">
-          <p>シングルモード: AIとのハッカソンバトル</p>
-          <p>マルチモード: 他のプレイヤーとの対戦</p>
         </div>
       </div>
     </div>

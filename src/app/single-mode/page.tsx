@@ -12,7 +12,7 @@ import {
   techLevelsAtom,
   resourceAtom,
   isLoadingAtom,
-  multiGameStateAtom,
+  initializeMultiGameAtom,
 } from '@/store/game';
 import { initializeShopAtom } from '@/features/shop';
 import { CollapsibleGameLayout } from '@/components/layout/CollapsibleGameLayout';
@@ -24,6 +24,9 @@ import { ScoreSummary } from '@/components/game/ScoreSummary';
 import { PlayerList } from '@/components/game/PlayerList';
 import { ShopHandTabs } from '@/components/game/ShopHandTabs';
 import { EndGameModal } from '@/components/game/EndGameModal';
+import { AIEvaluationScreen } from '@/components/game/AIEvaluationScreen';
+import { RoundResult } from '@/components/game/RoundResult';
+import { FinalRanking } from '@/components/game/FinalRanking';
 import { Button } from '@/components/ui/Button';
 import { evaluateHackathon } from '@/libs/gemini';
 import { 
@@ -34,7 +37,7 @@ import {
   isGameEnded,
   canStartHackathon
 } from '@/libs/game';
-import { THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
+import { GAME_CONFIG } from '@/const/game';
 
 export default function SingleModePage() {
   const [gameState] = useAtom(gameStateAtom);
@@ -47,10 +50,11 @@ export default function SingleModePage() {
   const [techLevels, setTechLevels] = useAtom(techLevelsAtom);
   const [resource, setResource] = useAtom(resourceAtom);
   const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
-  const [multiGameState, setMultiGameState] = useAtom(multiGameStateAtom);
+  const [, initializeMultiGame] = useAtom(initializeMultiGameAtom);
   
   const [showEndModal, setShowEndModal] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
+  const [gamePhase, setGamePhase] = useState<'preparation' | 'ai_evaluation' | 'round_result' | 'final_ranking'>('preparation');
 
   // シングルモードを「一人用マルチモード」として初期化
   useEffect(() => {
@@ -71,37 +75,9 @@ export default function SingleModePage() {
       isConnected: true,
     };
     
-    setMultiGameState({
-      mode: 'single',
-      players: [singlePlayer],
-      currentPlayerId: 'single-player',
-      gameStarted: true,
-      currentPhase: 'preparation',
-      timeLeft: 0,
-      isTimerActive: false,
-      phaseMessage: "準備フェーズ"
-    });
-  }, [initializeGame, initializeShop, setMultiGameState]);
-
-  // マルチモード状態をシングルプレイヤーの状態と同期
-  useEffect(() => {
-    if (multiGameState.players.length > 0) {
-      const player = multiGameState.players[0];
-      const updatedPlayer = {
-        ...player,
-        score,
-        resource,
-        techLevels,
-        selectedCards,
-        idea,
-      };
-      
-      setMultiGameState({
-        ...multiGameState,
-        players: [updatedPlayer],
-      });
-    }
-  }, [score, resource, techLevels, selectedCards, idea]); // setMultiGameState, multiGameStateは除く
+    // initializeMultiGameを使用して適切に初期化
+    initializeMultiGame([singlePlayer], 'single-player');
+  }, [initializeGame, initializeShop, initializeMultiGame]);
 
   const handleStartHackathon = async () => {
     if (!canStartHackathon(selectedCards, idea) || !gameState.hackathonInfo) {
@@ -109,6 +85,7 @@ export default function SingleModePage() {
     }
 
     setIsLoading(true);
+    setGamePhase('ai_evaluation');
 
     try {
       // AI評価を実行
@@ -125,8 +102,10 @@ export default function SingleModePage() {
       const resourceGain = calculateResourceGain(roundScore);
 
       // スコア更新
-      setScore(score + roundScore);
-      setResource(resource + resourceGain);
+      const newScore = score + roundScore;
+      const newResource = resource + resourceGain;
+      setScore(newScore);
+      setResource(newResource);
 
       // 技術レベル更新
       const newTechLevels = upgradeTechLevels(techLevels, selectedCards);
@@ -136,26 +115,29 @@ export default function SingleModePage() {
       setSelectedCards([]);
       setIdea('');
 
-      // 次のターンへ
-      const nextTurn = turn + 1;
-      setTurn(nextTurn);
+      // 結果表示フェーズに移行
+      setGamePhase('round_result');
 
-      if (isGameEnded(nextTurn)) {
-        // ゲーム終了
-        const finalBonus = calculateFinalBonus(newTechLevels);
-        const totalFinalScore = score + roundScore + finalBonus;
-        setFinalScore(totalFinalScore);
-        setShowEndModal(true);
-      } else {
-        // 新しいハッカソン情報生成
-        const newHackathonInfo = {
-          theme: THEMES[Math.floor(Math.random() * THEMES.length)],
-          direction: DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)],
-        };
-        // ここで新しいハッカソン情報をセットする処理が必要
-      }
+      // 3秒後に次の判定
+      setTimeout(() => {
+        const nextTurn = turn + 1;
+        setTurn(nextTurn);
+
+        if (isGameEnded(nextTurn)) {
+          // ゲーム終了
+          const finalBonus = calculateFinalBonus(newTechLevels);
+          const totalFinalScore = newScore + finalBonus;
+          setFinalScore(totalFinalScore);
+          setGamePhase('final_ranking');
+        } else {
+          // 次のラウンドへ
+          setGamePhase('preparation');
+        }
+      }, 3000);
+
     } catch (error) {
       console.error('Hackathon execution error:', error);
+      setGamePhase('preparation'); // エラー時は準備フェーズに戻る
     } finally {
       setIsLoading(false);
     }
@@ -164,40 +146,91 @@ export default function SingleModePage() {
   const handleRestart = () => {
     setShowEndModal(false);
     setFinalScore(0);
+    setGamePhase('preparation');
   };
 
-  return (
-    <CollapsibleGameLayout
-      header={<GameStatus isMultiMode={true} />}
-      leftPanel={<ScoreSummary isMultiMode={true} />}
-      centerPanel={
-        <div className="space-y-4">
-          <HackathonInfo />
-          <SelectedCards />
-          <IdeaInput />
-          <Button
-            variant="danger"
-            size="lg"
-            className="w-full"
-            onClick={handleStartHackathon}
-            disabled={
-              !canStartHackathon(selectedCards, idea) || 
-              isLoading || 
-              !gameState.hackathonInfo
-            }
-          >
-            {isLoading ? 'ハッカソン実行中...' : 'ハッカソンを開始'}
-          </Button>
-        </div>
-      }
-      rightPanel={<PlayerList isMultiMode={true} />}
-      bottomPanel={<ShopHandTabs />}
-    >
-      <EndGameModal
-        isOpen={showEndModal}
-        finalScore={finalScore}
-        onRestart={handleRestart}
-      />
-    </CollapsibleGameLayout>
-  );
+  const handleNextRound = () => {
+    setGamePhase('preparation');
+  };
+
+  const handleFinishGame = () => {
+    setGamePhase('final_ranking');
+  };
+
+  const handleBackToHome = () => {
+    window.location.href = '/';
+  };
+
+  // フェーズベースのルーティング
+  switch (gamePhase) {
+    case 'ai_evaluation':
+      return (
+        <CollapsibleGameLayout
+          header={<GameStatus isMultiMode={false} />}
+          leftPanel={<ScoreSummary isMultiMode={false} />}
+          centerPanel={
+            <AIEvaluationScreen 
+              onEvaluationComplete={() => setGamePhase('round_result')} 
+            />
+          }
+          rightPanel={<PlayerList isMultiMode={false} />}
+          bottomPanel={<ShopHandTabs />}
+        />
+      );
+
+    case 'round_result':
+      return (
+        <CollapsibleGameLayout
+          header={<GameStatus isMultiMode={false} />}
+          leftPanel={<ScoreSummary isMultiMode={false} />}
+          centerPanel={
+            <RoundResult 
+              onNextRound={handleNextRound}
+              onFinishGame={handleFinishGame}
+            />
+          }
+          rightPanel={<PlayerList isMultiMode={false} />}
+          bottomPanel={<ShopHandTabs />}
+        />
+      );
+
+    case 'final_ranking':
+      return (
+        <FinalRanking 
+          onRestart={handleRestart}
+          onBackToHome={handleBackToHome}
+        />
+      );
+
+    case 'preparation':
+    default:
+      return (
+        <CollapsibleGameLayout
+          header={<GameStatus isMultiMode={false} />}
+          leftPanel={<ScoreSummary isMultiMode={false} />}
+          centerPanel={
+            <div className="space-y-4">
+              <HackathonInfo />
+              <SelectedCards />
+              <IdeaInput />
+              <Button
+                variant="danger"
+                onClick={handleStartHackathon}
+                disabled={!canStartHackathon(selectedCards, idea) || isLoading}
+              >
+                {isLoading ? 'AI評価中...' : 'ハッカソン実行'}
+              </Button>
+            </div>
+          }
+          rightPanel={<PlayerList isMultiMode={false} />}
+          bottomPanel={<ShopHandTabs />}
+        >
+          <EndGameModal
+            isOpen={showEndModal}
+            finalScore={finalScore}
+            onRestart={handleRestart}
+          />
+        </CollapsibleGameLayout>
+      );
+  }
 }

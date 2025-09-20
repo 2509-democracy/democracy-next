@@ -12,16 +12,12 @@ import {
   scoreAtom,
   techLevelsAtom,
   resourceAtom,
-  isLoadingAtom,
   multiGameStateAtom,
   initializeMultiGameAtom,
-  currentPlayerAtom,
   startTimerAtom,
   stopTimerAtom,
   updateTimerAtom,
   setPhaseAtom,
-  togglePlayerReadyAtom,
-  checkAllReadyAtom,
   MultiPlayer,
 } from '@/store/game';
 import { initializeShopAtom } from '@/features/shop';
@@ -33,18 +29,21 @@ import { IdeaInput } from '@/components/game/IdeaInput';
 import { ScoreSummary } from '@/components/game/ScoreSummary';
 import { PlayerList } from '@/components/game/PlayerList';
 import { ShopHandTabs } from '@/components/game/ShopHandTabs';
-import { EndGameModal } from '@/components/game/EndGameModal';
+import { MatchingScreen } from '@/components/game/MatchingScreen';
+import { SubmissionReview } from '@/components/game/SubmissionReview';
+import { AIEvaluationScreen } from '@/components/game/AIEvaluationScreen';
+import { RoundResult } from '@/components/game/RoundResult';
+import { FinalRanking } from '@/components/game/FinalRanking';
 import { Button } from '@/components/ui/Button';
 import { evaluateHackathon } from '@/libs/gemini';
 import { 
   calculateTechLevelBonus, 
-  calculateFinalBonus, 
   calculateResourceGain,
   upgradeTechLevels,
   isGameEnded,
   canStartHackathon
 } from '@/libs/game';
-import { THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
+import { GAME_CONFIG } from '@/const/game';
 
 // ダミープレイヤー名
 const AI_NAMES = ['エンジニア太郎', 'コーダー花子', 'デベロッパー次郎'];
@@ -77,20 +76,14 @@ export default function MultiModePage() {
   const [score, setScore] = useAtom(scoreAtom);
   const [techLevels, setTechLevels] = useAtom(techLevelsAtom);
   const [resource, setResource] = useAtom(resourceAtom);
-  const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
   
   const [multiState, setMultiState] = useAtom(multiGameStateAtom);
   const [, initializeMultiGame] = useAtom(initializeMultiGameAtom);
-  const [currentPlayer] = useAtom(currentPlayerAtom);
   const [, startTimer] = useAtom(startTimerAtom);
   const [, stopTimer] = useAtom(stopTimerAtom);
   const [, updateTimer] = useAtom(updateTimerAtom);
   const [, setPhase] = useAtom(setPhaseAtom);
-  const [, togglePlayerReady] = useAtom(togglePlayerReadyAtom);
-  const [allReady] = useAtom(checkAllReadyAtom);
   
-  const [showEndModal, setShowEndModal] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // 初期化
@@ -102,8 +95,7 @@ export default function MultiModePage() {
       initializeGame();
       initializeShop(GAME_CONFIG.SHOP_SIZE);
       
-      // マルチプレイヤー作成（自分 + ダミー2-3人）
-      const playerCount = Math.floor(Math.random() * 2) + 3; // 3-4人
+      // マルチプレイヤー作成（自分 + CPU3人 = 合計4人）
       const players: MultiPlayer[] = [
         {
           id: playerId,
@@ -119,16 +111,15 @@ export default function MultiModePage() {
         }
       ];
       
-      // ダミープレイヤー追加
-      for (let i = 1; i < playerCount; i++) {
-        players.push(createDummyPlayer(AI_NAMES[(i - 1) % AI_NAMES.length]));
+      // CPU3人を追加
+      for (let i = 0; i < 3; i++) {
+        players.push(createDummyPlayer(AI_NAMES[i % AI_NAMES.length]));
       }
       
       // マルチゲーム初期化
       initializeMultiGame(players, playerId);
       
-      // 準備フェーズのタイマー開始（45秒）
-      startTimer(45);
+      // マッチングフェーズから開始（タイマーはまだ開始しない）
       
       setIsInitialized(true);
     }
@@ -142,58 +133,31 @@ export default function MultiModePage() {
         updateTimer(newTime);
         
         if (newTime <= 0) {
-          handleTimerEnd();
+          stopTimer();
+          
+          if (multiState.currentPhase === 'preparation') {
+            // 準備時間終了 → 自動でハッカソン実行  
+            handleStartHackathon();
+          }
         }
       }, 1000);
       
       return () => clearInterval(interval);
     }
-  }, [multiState.isTimerActive, multiState.timeLeft, updateTimer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [multiState.isTimerActive, multiState.timeLeft, multiState.currentPhase, updateTimer, stopTimer]); // handleStartHackathon is hoisted function declaration
 
-  // ダミープレイヤーの行動シミュレート
-  useEffect(() => {
-    if (multiState.gameStarted && multiState.currentPhase === 'preparation') {
-      const interval = setInterval(() => {
-        setMultiState(prev => ({
-          ...prev,
-          players: prev.players.map(player => 
-            player.id === multiState.currentPlayerId 
-              ? player 
-              : { ...player, isReady: Math.random() > 0.7 }
-          )
-        }));
-      }, 3000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [multiState.gameStarted, multiState.currentPhase, multiState.currentPlayerId, setMultiState]);
-
-  const handleTimerEnd = () => {
-    stopTimer();
-    
-    if (multiState.currentPhase === 'preparation') {
-      // 準備時間終了 → 自動でハッカソン実行
-      handleStartHackathon();
-    }
-  };
-
-  const handleReadyToggle = () => {
-    if (currentPlayer) {
-      togglePlayerReady(currentPlayer.id);
-    }
-  };
-
-  const handleStartHackathon = async () => {
+  // 関数宣言でhoistingを利用
+  async function handleStartHackathon() {
     if (!canStartHackathon(selectedCards, idea) || !gameState.hackathonInfo) {
       return;
     }
 
-    setIsLoading(true);
-    setPhase('execution', 'ハッカソン実行中...');
+    setPhase('ai_evaluation', 'ハッカソン実行中...');
 
     try {
       // 評価フェーズに遷移
-      setPhase('evaluation', 'AI評価中...');
+      setPhase('ai_evaluation', 'AI評価中...');
 
       // AI評価を実行
       const result = await evaluateHackathon({
@@ -219,7 +183,7 @@ export default function MultiModePage() {
       setTechLevels(newTechLevels);
 
       // 結果フェーズに遷移
-      setPhase('result', '結果発表！');
+      setPhase('round_result', '結果発表！');
 
       // マルチプレイヤー状態も更新
       setMultiState(prev => ({
@@ -257,18 +221,11 @@ export default function MultiModePage() {
 
         if (isGameEnded(nextTurn)) {
           // ゲーム終了
-          const finalBonus = calculateFinalBonus(newTechLevels);
-          const totalFinalScore = newScore + finalBonus;
-          setFinalScore(totalFinalScore);
-          setShowEndModal(true);
+          // 最終結果に遷移
+          setPhase('final_ranking', '最終結果発表');
           stopTimer();
         } else {
           // 次のターン開始
-          const newHackathonInfo = {
-            theme: THEMES[Math.floor(Math.random() * THEMES.length)],
-            direction: DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)],
-          };
-          
           setMultiState(prev => ({ ...prev, currentPhase: 'preparation' }));
           startTimer(45); // 次の準備フェーズ
         }
@@ -276,14 +233,55 @@ export default function MultiModePage() {
 
     } catch (error) {
       console.error('Hackathon execution error:', error);
-    } finally {
-      setIsLoading(false);
+    }
+  }
+
+  // フェーズハンドラー
+  const handleStartGame = () => {
+    // ゲーム開始状態に変更し、準備フェーズに移行
+    setMultiState(prev => ({ 
+      ...prev, 
+      gameStarted: true,
+      currentPhase: 'preparation',
+      phaseMessage: '準備フェーズ - アイデアを考えよう！'
+    }));
+    // タイマー開始（45秒）
+    startTimer(45);
+  };
+  
+  const handleProceedToEvaluation = () => {
+    setPhase('ai_evaluation', 'AI評価中...');
+  };
+  
+  const handleEvaluationComplete = () => {
+    setPhase('round_result', '結果発表！');
+  };
+  
+  const handleNextRound = () => {
+    // ラウンド進行ロジック
+    const nextRound = multiState.currentRound + 1;
+    setMultiState(prev => ({ ...prev, currentRound: nextRound }));
+    
+    if (nextRound > multiState.maxRounds) {
+      setPhase('final_ranking', '最終結果発表');
+    } else {
+      setPhase('preparation', `第${nextRound}ラウンド - 準備フェーズ`);
     }
   };
-
+  
+  const handleFinishGame = () => {
+    setPhase('final_ranking', '最終結果発表');
+  };
+  
   const handleRestart = () => {
-    setShowEndModal(false);
-    setFinalScore(0);
+    setMultiState(prev => ({ 
+      ...prev, 
+      currentPhase: 'matching',
+      currentRound: 1,
+      roundResults: [],
+      submissions: [],
+      phaseMessage: 'プレイヤーを待っています...'
+    }));
   };
 
   const handleBackToHome = () => {
@@ -291,7 +289,8 @@ export default function MultiModePage() {
     router.push('/');
   };
 
-  if (!isInitialized || !multiState.gameStarted) {
+  // 初期化時の待機画面
+  if (!isInitialized) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -302,122 +301,120 @@ export default function MultiModePage() {
     );
   }
 
-  return (
-    <CollapsibleGameLayout
-      header={
-        <div className="flex items-center justify-between w-full">
-          <GameStatus isMultiMode={true} />
-          <Button variant="secondary" onClick={handleBackToHome}>
-            ホームに戻る
-          </Button>
-        </div>
-      }
-      leftPanel={<ScoreSummary isMultiMode={true} />}
-      centerPanel={
-        <div className="space-y-4">
-          <HackathonInfo />
-          <SelectedCards />
-          <IdeaInput />
-          
-          <div className="space-y-2">
-            {/* フェーズメッセージを大きく表示 */}
-            <div className="text-center py-3 bg-blue-50 rounded-lg">
-              <h2 className="text-lg font-bold text-blue-700">
-                {multiState.phaseMessage}
-              </h2>
+  // SPA内フェーズルーティング
+  switch (multiState.currentPhase) {
+    case 'matching':
+      return <MatchingScreen onStartGame={handleStartGame} />;
+      
+    case 'preparation':
+      return (
+        <CollapsibleGameLayout
+          header={
+            <div className="flex items-center justify-between w-full">
+              <GameStatus isMultiMode={true} />
+              <Button variant="secondary" onClick={handleBackToHome}>
+                ホームに戻る
+              </Button>
             </div>
-
-            {multiState.currentPhase === 'preparation' && (
-              <>
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={handleReadyToggle}
-                >
-                  {currentPlayer?.isReady ? '✓ 準備完了' : '準備完了にする'}
-                </Button>
-                
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="w-full"
-                  onClick={handleStartHackathon}
-                  disabled={
-                    !canStartHackathon(selectedCards, idea) || 
-                    isLoading || 
-                    !gameState.hackathonInfo
-                  }
-                >
-                  {isLoading ? 'ハッカソン実行中...' : 'ハッカソンを開始'}
-                </Button>
-              </>
-            )}
-
-            {multiState.currentPhase === 'hackathon_ready' && (
-              <div className="text-center py-6">
-                <div className="text-2xl font-bold text-green-600 mb-2">
-                  🎉 お題が出そろいました！
-                </div>
-                <div className="text-sm text-gray-600">
-                  まもなくハッカソンが始まります...
+          }
+          leftPanel={<ScoreSummary isMultiMode={true} />}
+          centerPanel={
+            <div className="space-y-4">
+              <HackathonInfo />
+              <SelectedCards />
+              <IdeaInput />
+              
+              <div className="space-y-2">
+                <div className="text-center py-3 bg-blue-50 rounded-lg">
+                  <h2 className="text-lg font-bold text-blue-700">
+                    {multiState.phaseMessage}
+                  </h2>
                 </div>
               </div>
-            )}
-            
-            {multiState.currentPhase === 'execution' && (
-              <div className="text-center py-4">
-                <div className="animate-pulse text-lg font-semibold text-blue-600">
-                  ハッカソン実行中...
-                </div>
-                <div className="text-sm text-gray-500 mt-2">
-                  AI評価を実行しています
-                </div>
-              </div>
-            )}
-            
-            {multiState.currentPhase === 'evaluation' && (
-              <div className="text-center py-4">
-                <div className="animate-pulse text-lg font-semibold text-orange-600">
-                  AI評価中...
-                </div>
-                <div className="text-sm text-gray-500 mt-2">
-                  あなたのアイデアを評価しています
-                </div>
-              </div>
-            )}
-
-            {multiState.currentPhase === 'result' && (
-              <div className="text-center py-4">
-                <div className="text-lg font-semibold text-green-600 mb-2">
-                  🎊 結果発表！
-                </div>
-                <div className="text-sm text-gray-500">
-                  次のターンまであと {multiState.timeLeft} 秒
-                </div>
-              </div>
-            )}
-
-            {multiState.currentPhase === 'ranking' && (
-              <div className="text-center py-4">
-                <div className="text-xl font-bold text-purple-600 mb-2">
-                  🏆 最終ランキング
-                </div>
-                <div className="text-sm text-gray-500">
-                  ゲーム終了です！
-                </div>
-              </div>
-            )}
+            </div>
+          }
+          rightPanel={<PlayerList isMultiMode={true} />}
+          bottomPanel={<ShopHandTabs />}
+        />
+      );
+      
+    case 'submission_review':
+      return (
+        <CollapsibleGameLayout
+          header={
+            <div className="flex items-center justify-between w-full">
+              <GameStatus isMultiMode={true} />
+              <Button variant="secondary" onClick={handleBackToHome}>
+                ホームに戻る
+              </Button>
+            </div>
+          }
+          leftPanel={<ScoreSummary isMultiMode={true} />}
+          centerPanel={<SubmissionReview onProceedToEvaluation={handleProceedToEvaluation} />}
+          rightPanel={<PlayerList isMultiMode={true} />}
+          bottomPanel={<ShopHandTabs />}
+        />
+      );
+      
+    case 'ai_evaluation':
+      return (
+        <CollapsibleGameLayout
+          header={
+            <div className="flex items-center justify-between w-full">
+              <GameStatus isMultiMode={true} />
+              <Button variant="secondary" onClick={handleBackToHome}>
+                ホームに戻る
+              </Button>
+            </div>
+          }
+          leftPanel={<ScoreSummary isMultiMode={true} />}
+          centerPanel={<AIEvaluationScreen onEvaluationComplete={handleEvaluationComplete} />}
+          rightPanel={<PlayerList isMultiMode={true} />}
+          bottomPanel={<ShopHandTabs />}
+        />
+      );
+      
+    case 'round_result':
+      return (
+        <CollapsibleGameLayout
+          header={
+            <div className="flex items-center justify-between w-full">
+              <GameStatus isMultiMode={true} />
+              <Button variant="secondary" onClick={handleBackToHome}>
+                ホームに戻る
+              </Button>
+            </div>
+          }
+          leftPanel={<ScoreSummary isMultiMode={true} />}
+          centerPanel={
+            <RoundResult 
+              onNextRound={handleNextRound} 
+              onFinishGame={handleFinishGame} 
+            />
+          }
+          rightPanel={<PlayerList isMultiMode={true} />}
+          bottomPanel={<ShopHandTabs />}
+        />
+      );
+      
+    case 'final_ranking':
+      return (
+        <FinalRanking 
+          onRestart={handleRestart} 
+          onBackToHome={handleBackToHome} 
+        />
+      );
+      
+    default:
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-600">不明なフェーズです: {multiState.currentPhase}</p>
+            <Button variant="secondary" onClick={handleBackToHome} className="mt-4">
+              ホームに戻る
+            </Button>
           </div>
         </div>
-      }
-      rightPanel={<PlayerList isMultiMode={true} />}
-      bottomPanel={<ShopHandTabs />}
-    >
-      <EndGameModal
-        isOpen={showEndModal}
-        finalScore={finalScore}
-        onRestart={handleRestart}
-      />
-    </CollapsibleGameLayout>
-  );
+      );
+  }
 }
