@@ -37,7 +37,7 @@ const demoHand = [
 ];
 
 export function ShopHandTabsDemo() {
-  const [activeTab, setActiveTab] = useState<"shop" | "hand">("shop");
+  const [activeTab] = useState<"shop" | "hand">("shop");
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="flex items-center gap-4 mb-2">
