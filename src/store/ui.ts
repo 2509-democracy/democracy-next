@@ -1,4 +1,6 @@
-import { atom } from 'jotai';
+import { atom } from "jotai";
+// チュートリアルモーダル表示状態管理
+export const tutorialModalAtom = atom<boolean>(false);
 
 // ペイン展開状態の管理
 export interface PaneState {
@@ -40,13 +42,10 @@ export const bottomPaneAtom = atom(
 );
 
 // ペイン切り替え用アクション
-export const togglePaneAtom = atom(
-  null,
-  (get, set, pane: keyof PaneState) => {
-    const currentState = get(paneStateAtom);
-    set(paneStateAtom, {
-      ...currentState,
-      [pane]: !currentState[pane],
-    });
-  }
-);
+export const togglePaneAtom = atom(null, (get, set, pane: keyof PaneState) => {
+  const currentState = get(paneStateAtom);
+  set(paneStateAtom, {
+    ...currentState,
+    [pane]: !currentState[pane],
+  });
+});
