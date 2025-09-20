@@ -17,7 +17,7 @@ export interface GameData {
   selectedCards: TechCard[];
 }
 
-export type GamePhase = 'preparation' | 'execution' | 'result' | 'ended';
+export type GamePhase = "preparation" | "execution" | "result" | "ended";
 
 export interface GameState extends GameData {
   phase: GamePhase;
