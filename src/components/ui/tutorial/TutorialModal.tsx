@@ -4,6 +4,7 @@ import { ALL_TECH_CARDS } from "@/features/card-pool/constants/cards";
 import { GameStatus } from "@/components/game/GameStatus";
 import { TechLevels } from "@/components/game/TechLevels";
 import { ShopHandTabsDemo } from "../tutorial/ShopHandTabsDemo";
+import { HackathonInfo } from "@/components/game/HackathonInfo";
 
 const sampleCard =
   ALL_TECH_CARDS.find((card) => card.id === "react") ?? ALL_TECH_CARDS[0];
@@ -14,6 +15,10 @@ const tutorialSteps = [
     content: (
       <>
         このゲームは10ターン制のハイスコア競争型ハッカソンです。各ターンでAI採点によるスコアを獲得し、最終的な総合スコアを目指します。
+        <div className="my-4">
+          {/* 今回のハッカソン情報（テーマ・方向性）を表示 */}
+          <HackathonInfo />
+        </div>
       </>
     ),
   },
