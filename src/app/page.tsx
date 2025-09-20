@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+
+// グローバルCSSとしてkeyframesを追加（styled-jsx使用）
 import { Button } from "@/components/ui/Button";
 import Image from "next/image";
 import { channelA, insertUser } from "@/features/multi-mode/matching/matching";
@@ -29,13 +31,27 @@ export default function Home() {
           height: "100vh",
           backgroundImage: "url(/title_image.png)",
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: "center center",
           backgroundRepeat: "no-repeat",
           opacity: 0.5,
           zIndex: 0,
+          animation: "bgVibrateY 6s ease-in-out infinite alternate",
         }}
         aria-hidden="true"
       />
+      <style jsx global>{`
+        @keyframes bgVibrateY {
+          0% {
+            background-position: center center;
+          }
+          50% {
+            background-position: center calc(50% + 20px);
+          }
+          100% {
+            background-position: center center;
+          }
+        }
+      `}</style>
       <div className="max-w-md mx-auto text-center space-y-8 relative z-10">
         <div className="flex justify-center">
           <Image
