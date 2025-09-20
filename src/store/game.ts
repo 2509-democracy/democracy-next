@@ -143,3 +143,176 @@ export const buyCardAtom = atom(null, (get, set, cardIndex: number) => {
 });
 
 export const ideaAtom = atom<string>('');
+
+// 詳細なゲームフェーズ定義
+export type GamePhase = 'waiting' | 'preparation' | 'hackathon_ready' | 'execution' | 'evaluation' | 'result' | 'ranking';
+
+// マルチモード用の拡張
+export interface MultiPlayer {
+  id: string;
+  name: string;
+  score: number;
+  resource: number;
+  techLevels: Record<string, number>;
+  hand: TechCard[];
+  selectedCards: TechCard[];
+  idea: string;
+  isReady: boolean;
+  isConnected: boolean;
+}
+
+export interface MultiGameState {
+  mode: 'single' | 'multi';
+  players: MultiPlayer[];
+  currentPlayerId: string;
+  gameStarted: boolean;
+  currentPhase: GamePhase;
+  timeLeft: number;
+  isTimerActive: boolean;
+  phaseMessage: string; // フェーズメッセージ
+}
+
+// マルチゲーム初期状態
+const initialMultiGameState: MultiGameState = {
+  mode: 'single',
+  players: [],
+  currentPlayerId: '',
+  gameStarted: false,
+  currentPhase: 'preparation',
+  timeLeft: 0,
+  isTimerActive: false,
+  phaseMessage: 'ゲーム準備中...',
+};
+
+// マルチゲーム用atom
+export const multiGameStateAtom = atom<MultiGameState>(initialMultiGameState);
+
+// マルチゲーム用derived atoms
+export const currentPlayerAtom = atom((get) => {
+  const multiState = get(multiGameStateAtom);
+  return multiState.players.find(p => p.id === multiState.currentPlayerId) || null;
+});
+
+export const otherPlayersAtom = atom((get) => {
+  const multiState = get(multiGameStateAtom);
+  return multiState.players.filter(p => p.id !== multiState.currentPlayerId);
+});
+
+// マルチゲーム初期化action
+export const initializeMultiGameAtom = atom(
+  null,
+  (get, set, players: MultiPlayer[], playerId: string) => {
+    set(multiGameStateAtom, {
+      ...initialMultiGameState,
+      mode: 'multi',
+      players,
+      currentPlayerId: playerId,
+      gameStarted: true,
+    });
+    
+    // 現在のプレイヤーの状態をゲーム状態に反映
+    const currentPlayer = players.find(p => p.id === playerId);
+    if (currentPlayer) {
+      set(gameStateAtom, {
+        ...get(gameStateAtom),
+        resource: currentPlayer.resource,
+        score: currentPlayer.score,
+        techLevels: currentPlayer.techLevels,
+        hand: currentPlayer.hand,
+        selectedCards: currentPlayer.selectedCards,
+      });
+      set(ideaAtom, currentPlayer.idea);
+    }
+  }
+);
+
+// タイマー関連
+export const startTimerAtom = atom(
+  null,
+  (get, set, seconds: number) => {
+    const multiState = get(multiGameStateAtom);
+    set(multiGameStateAtom, {
+      ...multiState,
+      timeLeft: seconds,
+      isTimerActive: true,
+    });
+  }
+);
+
+export const stopTimerAtom = atom(
+  null,
+  (get, set) => {
+    const multiState = get(multiGameStateAtom);
+    set(multiGameStateAtom, {
+      ...multiState,
+      isTimerActive: false,
+    });
+  }
+);
+
+export const updateTimerAtom = atom(
+  null,
+  (get, set, timeLeft: number) => {
+    const multiState = get(multiGameStateAtom);
+    set(multiGameStateAtom, {
+      ...multiState,
+      timeLeft: Math.max(0, timeLeft),
+    });
+  }
+);
+
+// フェーズ遷移アクション
+export const setPhaseAtom = atom(
+  null,
+  (get, set, phase: GamePhase, message?: string) => {
+    const multiState = get(multiGameStateAtom);
+    const phaseMessages: Record<GamePhase, string> = {
+      waiting: 'プレイヤーを待っています...',
+      preparation: '準備フェーズ - アイデアを考えよう！',
+      hackathon_ready: 'お題が出そろいました！',
+      execution: 'ハッカソン実行中...',
+      evaluation: 'AI評価中...',
+      result: '結果発表！',
+      ranking: '最終ランキング',
+    };
+    
+    set(multiGameStateAtom, {
+      ...multiState,
+      currentPhase: phase,
+      phaseMessage: message || phaseMessages[phase],
+    });
+  }
+);
+
+// 全プレイヤーの準備完了チェック
+export const checkAllReadyAtom = atom((get) => {
+  const multiState = get(multiGameStateAtom);
+  return multiState.players.length > 0 && multiState.players.every(p => p.isReady);
+});
+
+// プレイヤーの準備状態を切り替え
+export const togglePlayerReadyAtom = atom(
+  null,
+  (get, set, playerId: string) => {
+    const multiState = get(multiGameStateAtom);
+    const updatedPlayers = multiState.players.map(player =>
+      player.id === playerId ? { ...player, isReady: !player.isReady } : player
+    );
+    
+    set(multiGameStateAtom, {
+      ...multiState,
+      players: updatedPlayers,
+    });
+    
+    // 全員準備完了の場合、フェーズを進める
+    const allReady = updatedPlayers.every(p => p.isReady);
+    if (allReady && multiState.currentPhase === 'preparation') {
+      // 「お題が出そろいました！」フェーズに遷移
+      set(setPhaseAtom, 'hackathon_ready', 'お題が出そろいました！');
+      // 5秒後にexecutionフェーズに自動遷移
+      setTimeout(() => {
+        set(setPhaseAtom, 'execution', 'ハッカソン実行中...');
+      }, 5000);
+    }
+  }
+);
