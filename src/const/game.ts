@@ -3,7 +3,7 @@ export const THEMES = ["心", "光", "力", "命", "夢", "空", "時", "愛", "
 export const DIRECTIONS = ["アイデア重視", "技術重視"];
 
 export const GAME_CONFIG = {
-  MAX_TURNS: 10,
+  MAX_TURNS: 2,
   INITIAL_RESOURCE: 10,
   SHOP_SIZE: 5,
   MAX_SELECTED_CARDS: 3,
