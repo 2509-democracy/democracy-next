@@ -39,7 +39,7 @@ import {
 } from "@/libs/game";
 import { GAME_CONFIG } from "@/const/game";
 import { tutorialModalAtom } from "@/store/ui";
-import { TutorialModal } from "@/components/ui/Modal";
+import { TutorialModal } from "@/components/ui/tutorial/TutorialModal";
 
 export default function SingleModePage() {
   const [gameState] = useAtom(gameStateAtom);

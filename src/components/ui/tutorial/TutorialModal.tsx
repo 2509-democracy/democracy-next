@@ -1,16 +1,9 @@
-import React, { useState } from "react";
-// チュートリアル用モーダル
-interface TutorialModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-import { TechCard } from "@/features/card-pool";
-import { TechCard as TechCardComponent } from "./TechCard";
+import React from "react";
+import { TechCard as TechCardComponent } from "../TechCard";
 import { ALL_TECH_CARDS } from "@/features/card-pool/constants/cards";
 import { GameStatus } from "@/components/game/GameStatus";
 import { TechLevels } from "@/components/game/TechLevels";
-import { ShopHandTabsDemo } from "./ShopHandTabsDemo";
+import { ShopHandTabsDemo } from "../tutorial/ShopHandTabsDemo";
 
 const sampleCard =
   ALL_TECH_CARDS.find((card) => card.id === "react") ?? ALL_TECH_CARDS[0];
@@ -96,27 +89,45 @@ const tutorialSteps = [
   },
 ];
 
-interface ModalProps {
+interface TutorialModalProps {
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
-  className?: string;
 }
 
-export function Modal({
-  isOpen,
-  onClose,
-  children,
-  className = "",
-}: ModalProps) {
+export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
+  const [step, setStep] = React.useState(0);
   if (!isOpen) return null;
-
+  const isFirst = step === 0;
+  const isLast = step === tutorialSteps.length - 1;
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
-      <div
-        className={`bg-gray-800 p-8 rounded-lg shadow-lg text-center max-w-md mx-4 ${className}`}
-      >
-        {children}
+      <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center max-w-md mx-4">
+        <h2 className="text-xl font-bold mb-4">{tutorialSteps[step].title}</h2>
+        <div className="mb-6">{tutorialSteps[step].content}</div>
+        <div className="flex justify-between">
+          <button
+            className="px-4 py-2 bg-gray-600 rounded text-white disabled:opacity-50"
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            disabled={isFirst}
+          >
+            前へ
+          </button>
+          <button
+            className="px-4 py-2 bg-gray-600 rounded text-white"
+            onClick={onClose}
+          >
+            閉じる
+          </button>
+          <button
+            className="px-4 py-2 bg-blue-600 rounded text-white disabled:opacity-50"
+            onClick={() =>
+              setStep((s) => Math.min(tutorialSteps.length - 1, s + 1))
+            }
+            disabled={isLast}
+          >
+            次へ
+          </button>
+        </div>
       </div>
     </div>
   );
