@@ -62,7 +62,7 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
                   }`}>
                     #{index + 1}
                   </span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-gray-700  ">
                     {player.name} {player.id === multiGameState.currentPlayerId && '(あなた)'}
                   </span>
                 </div>

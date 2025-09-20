@@ -35,7 +35,7 @@ import { AIEvaluationScreen } from '@/components/game/AIEvaluationScreen';
 import { RoundResult } from '@/components/game/RoundResult';
 import { FinalRanking } from '@/components/game/FinalRanking';
 import { Button } from '@/components/ui/Button';
-import { evaluateHackathon } from '@/libs/gemini';
+import { evaluateHackathon } from '@/libs/mock-ai';
 import { 
   calculateFieldTechBonus,
   calculateResourceGain,
@@ -163,7 +163,7 @@ export default function MultiModePage() {
       // 評価フェーズに遷移
       setPhase('ai_evaluation', 'AI評価中...');
 
-      // AI評価を実行（空の場合はデフォルト値使用）
+      // AI評価を実行（モック版）
       const result = await evaluateHackathon({
         theme: gameState.hackathonInfo.theme,
         direction: gameState.hackathonInfo.direction,
@@ -227,11 +227,11 @@ export default function MultiModePage() {
     setMultiState(prev => ({ 
       ...prev, 
       gameStarted: true,
-      currentPhase: 'preparation',
-      phaseMessage: '準備フェーズ - アイデアを考えよう！'
     }));
+    setPhase('preparation', '第1ラウンド - 準備フェーズ');
     // タイマー開始（45秒）
-    startTimer(45);
+    console.log('Starting initial timer for round 1'); // デバッグログ
+    startTimer(3);
   };
   
   const handleProceedToEvaluation = () => {
@@ -253,6 +253,7 @@ export default function MultiModePage() {
       // 新しいラウンド開始時に無料リロール実行
       freeRerollShop();
       setPhase('preparation', `第${nextRound}ラウンド - 準備フェーズ`);
+      console.log('Starting timer for round', nextRound); // デバッグログ
       startTimer(45); // 準備フェーズのタイマー開始
     }
   };
