@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { GameState, HackathonInfo } from '@/types/game';
+import { GameState, HackathonInfo, MultiGamePhase, PlayerSubmission, RoundResult } from '@/types/game';
 import { generateCardPool, getShuffledPool } from '@/features/card-pool';
 import { THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
 import { TechCard } from '@/features/card-pool';
@@ -144,7 +144,7 @@ export const buyCardAtom = atom(null, (get, set, cardIndex: number) => {
 
 export const ideaAtom = atom<string>('');
 
-// 詳細なゲームフェーズ定義
+// 詳細なゲームフェーズ定義（後方互換性のため保持）
 export type GamePhase = 'waiting' | 'preparation' | 'hackathon_ready' | 'execution' | 'evaluation' | 'result' | 'ranking';
 
 // マルチモード用の拡張
@@ -166,10 +166,17 @@ export interface MultiGameState {
   players: MultiPlayer[];
   currentPlayerId: string;
   gameStarted: boolean;
-  currentPhase: GamePhase;
+  currentPhase: MultiGamePhase; // 新しいフェーズ型を使用
   timeLeft: number;
   isTimerActive: boolean;
   phaseMessage: string; // フェーズメッセージ
+  // 新規追加フィールド
+  currentRound: number;
+  maxRounds: number;
+  roundResults: RoundResult[];
+  submissions: PlayerSubmission[];
+  roomId?: string; // リアルタイム通信用のルームID
+  isHost?: boolean; // ホストプレイヤーフラグ
 }
 
 // マルチゲーム初期状態
@@ -178,10 +185,14 @@ const initialMultiGameState: MultiGameState = {
   players: [],
   currentPlayerId: '',
   gameStarted: false,
-  currentPhase: 'preparation',
+  currentPhase: 'matching',
   timeLeft: 0,
   isTimerActive: false,
-  phaseMessage: 'ゲーム準備中...',
+  phaseMessage: 'プレイヤーを待っています...',
+  currentRound: 1,
+  maxRounds: GAME_CONFIG.MAX_TURNS,
+  roundResults: [],
+  submissions: [],
 };
 
 // マルチゲーム用atom
@@ -207,7 +218,9 @@ export const initializeMultiGameAtom = atom(
       mode: 'multi',
       players,
       currentPlayerId: playerId,
-      gameStarted: true,
+      gameStarted: false, // matchingフェーズではまだゲーム開始していない
+      currentPhase: 'matching',
+      phaseMessage: 'プレイヤーを待っています...',
     });
     
     // 現在のプレイヤーの状態をゲーム状態に反映
@@ -264,16 +277,15 @@ export const updateTimerAtom = atom(
 // フェーズ遷移アクション
 export const setPhaseAtom = atom(
   null,
-  (get, set, phase: GamePhase, message?: string) => {
+  (get, set, phase: MultiGamePhase, message?: string) => {
     const multiState = get(multiGameStateAtom);
-    const phaseMessages: Record<GamePhase, string> = {
-      waiting: 'プレイヤーを待っています...',
+    const phaseMessages: Record<MultiGamePhase, string> = {
+      matching: 'プレイヤーを待っています...',
       preparation: '準備フェーズ - アイデアを考えよう！',
-      hackathon_ready: 'お題が出そろいました！',
-      execution: 'ハッカソン実行中...',
-      evaluation: 'AI評価中...',
-      result: '結果発表！',
-      ranking: '最終ランキング',
+      submission_review: 'お題が出そろいました！',
+      ai_evaluation: 'AI評価中...',
+      round_result: '結果発表！',
+      final_ranking: '最終ランキング',
     };
     
     set(multiGameStateAtom, {
@@ -308,10 +320,10 @@ export const togglePlayerReadyAtom = atom(
     const allReady = updatedPlayers.every(p => p.isReady);
     if (allReady && multiState.currentPhase === 'preparation') {
       // 「お題が出そろいました！」フェーズに遷移
-      set(setPhaseAtom, 'hackathon_ready', 'お題が出そろいました！');
-      // 5秒後にexecutionフェーズに自動遷移
+      set(setPhaseAtom, 'submission_review', 'お題が出そろいました！');
+      // 5秒後にai_evaluationフェーズに自動遷移
       setTimeout(() => {
-        set(setPhaseAtom, 'execution', 'ハッカソン実行中...');
+        set(setPhaseAtom, 'ai_evaluation', 'AI評価中...');
       }, 5000);
     }
   }
