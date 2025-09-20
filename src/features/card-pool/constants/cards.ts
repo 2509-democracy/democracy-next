@@ -1,4 +1,4 @@
-import { TechCard } from '../types';
+import { TechCard } from "../types";
 
 export const ALL_TECH_CARDS: TechCard[] = [
   {
@@ -44,7 +44,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
   {
     id: "tensorflow",
     name: "TensorFlow",
-    category: "Machine Learning",
+    category: "Other",
     cost: 3,
     level: 1,
     difficulty: 3,
@@ -54,7 +54,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
   {
     id: "pytorch",
     name: "PyTorch",
-    category: "Machine Learning",
+    category: "Other",
     cost: 3,
     level: 1,
     difficulty: 2,
@@ -74,7 +74,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
   {
     id: "jwt",
     name: "JWT",
-    category: "Authentication",
+    category: "Other",
     cost: 1,
     level: 1,
     difficulty: 1,
@@ -84,7 +84,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
   {
     id: "redis",
     name: "Redis",
-    category: "Data Store",
+    category: "Other",
     cost: 2,
     level: 1,
     difficulty: 1,
@@ -94,7 +94,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
   {
     id: "oauth",
     name: "OAuth",
-    category: "Authentication",
+    category: "Other",
     cost: 2,
     level: 1,
     difficulty: 3,
@@ -124,7 +124,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
   {
     id: "websocket",
     name: "WebSocket",
-    category: "Communication",
+    category: "Other",
     cost: 2,
     level: 1,
     difficulty: 2,

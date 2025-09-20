@@ -1,12 +1,9 @@
 import { TechCard as TechCardType } from "@/features/card-pool";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Frontend: "bg-blue-500",
-  Backend: "bg-green-500",
-  "Machine Learning": "bg-yellow-500",
-  Authentication: "bg-purple-500",
-  "Data Store": "bg-red-500",
-  Communication: "bg-pink-500",
+  Frontend: "bg-red-500",
+  Backend: "bg-blue-500",
+  Other: "bg-yellow-500",
 };
 
 function renderEmojis(count: number, emoji: string) {
