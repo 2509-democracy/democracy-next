@@ -29,7 +29,7 @@ export function CollapsibleGameLayout({
         gridTemplateColumns: `${paneState.left ? "220px" : "40px"} 1fr ${
           paneState.right ? "280px" : "40px"
         }`,
-        gridTemplateRows: `60px 1fr ${paneState.bottom ? "320px" : "40px"}`,
+        gridTemplateRows: `60px 1fr ${paneState.bottom ? "280px" : "40px"}`,
       }}
     >
       {/* 上部ヘッダー - 全幅に跨る */}
