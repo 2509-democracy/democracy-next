@@ -15,6 +15,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "ハッカソン・デベロッパー",
   description: "技術カードを使ってアイデアを競うハッカソンゲーム！",
+  icons: {
+    icon: "/tech_icons/nextjs.svg", // public/tech_iconsのNext.jsアイコンを使用
+  },
+  openGraph: {
+    title: "ハッカソン・デベロッパー",
+    description: "技術カードを使ってアイデアを競うハッカソンゲーム！",
+    url: "https://democracy.thirdlf03.com/",
+  },
 };
 
 export default function RootLayout({
