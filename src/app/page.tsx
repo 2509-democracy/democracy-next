@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
+import { channelA, insertUser } from '@/features/multi-mode/matching/matching';
 
 export default function Home() {
   const router = useRouter();
@@ -12,6 +13,8 @@ export default function Home() {
   };
 
   const handleMultiMode = () => {
+    channelA;
+    insertUser();
     router.push("/multi-mode");
   };
 

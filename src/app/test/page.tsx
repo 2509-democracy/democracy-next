@@ -1,16 +1,16 @@
-import { supabase } from '@/features/multi-mode/supabase'
+// import { supabase } from '@/features/multi-mode/supabase'
 
-const channelA = supabase
-  .channel('schema-db-changes')
-  .on(
-    'postgres_changes',
-    {
-      event: '*',
-      schema: 'public',
-    },
-    (payload) => console.log(payload)
-  )
-  .subscribe()
+// const channelA = supabase
+//   .channel('schema-db-changes')
+//   .on(
+//     'postgres_changes',
+//     {
+//       event: '*',
+//       schema: 'public',
+//     },
+//     (payload) => console.log(payload)
+//   )
+//   .subscribe()
 
 export default function Test() {
   return <>hoge</>
