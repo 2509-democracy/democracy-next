@@ -57,8 +57,7 @@ export interface PlayerRoundResult {
   playerId: string;
   playerName: string;
   submission: PlayerSubmission;
-  aiScore: number;
-  aiComment?: string;
+  aiEvaluation: DetailedAIEvaluationResponse;
   resourceGained: number;
   techLevelGained: Record<string, number>;
   totalScore: number;
@@ -66,13 +65,14 @@ export interface PlayerRoundResult {
 
 // AI評価結果の拡張
 export interface DetailedAIEvaluationResponse {
-  score: number;
-  comment?: string;
-  breakdown?: {
-    creativity: number;
-    technical: number;
-    feasibility: number;
-    alignment: number;
+  totalScore: number;
+  comment: string;
+  generatedImageUrl?: string;
+  breakdown: {
+    criteria1: number;    // 採点項目1（20点満点）
+    criteria2: number;    // 採点項目2（20点満点）
+    criteria3: number;    // 採点項目3（20点満点）
+    demoScore: number;    // デモ評価点（30点満点）
   };
 }
 
@@ -84,5 +84,13 @@ export interface AIEvaluationRequest {
 }
 
 export interface AIEvaluationResponse {
-  score: number;
+  totalScore: number;
+  comment: string;
+  generatedImageUrl?: string;
+  breakdown: {
+    criteria1: number;    // 採点項目1（20点満点）
+    criteria2: number;    // 採点項目2（20点満点）
+    criteria3: number;    // 採点項目3（20点満点）
+    demoScore: number;    // デモ評価点（30点満点）
+  };
 }
