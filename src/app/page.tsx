@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
-import Image from 'next/image';
-import { channelA, insertUser } from '@/features/multi-mode/matching/matching';
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import Image from "next/image";
+import { channelA, insertUser } from "@/features/multi-mode/matching/matching";
 
 export default function Home() {
   const router = useRouter();
@@ -13,19 +13,35 @@ export default function Home() {
   };
 
   const handleMultiMode = () => {
-    channelA;
     insertUser();
     router.push("/multi-mode");
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-100 flex items-center justify-center">
-      <div className="max-w-md mx-auto text-center space-y-8">
+    <div className="relative min-h-screen text-gray-100 flex items-center justify-center">
+      {/* 背景画像のみの透明度を変更 */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backgroundImage: "url(/title_image.png)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          opacity: 0.5,
+          zIndex: 0,
+        }}
+        aria-hidden="true"
+      />
+      <div className="max-w-md mx-auto text-center space-y-8 relative z-10">
         <div className="flex justify-center">
-          <Image 
-            src="/logo_fulfilled.png" 
-            alt="ハッカソン・デベロッパー" 
-            width={500} 
+          <Image
+            src="/logo_white_fulfilled.png"
+            alt="ハッカソン・デベロッパー"
+            width={500}
             height={120}
             className="max-w-full h-auto"
           />
