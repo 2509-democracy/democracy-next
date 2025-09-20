@@ -1,7 +1,7 @@
-import { useAtom } from 'jotai';
-import { selectedCardsAtom, handAtom, techLevelsAtom } from '@/store/game';
-import { TechCard } from '@/components/ui/TechCard';
-import { GAME_CONFIG } from '@/const/game';
+import { useAtom } from "jotai";
+import { selectedCardsAtom, handAtom, techLevelsAtom } from "@/store/game";
+import { TechCard } from "@/components/ui/TechCard";
+import { GAME_CONFIG } from "@/const/game";
 
 export function SelectedCards() {
   const [selectedCards, setSelectedCards] = useAtom(selectedCardsAtom);

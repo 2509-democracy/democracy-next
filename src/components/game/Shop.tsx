@@ -1,9 +1,13 @@
-import { useAtom } from 'jotai';
-import { resourceAtom, handAtom, techLevelsAtom } from '@/store/game';
-import { shopCardsAtom, rerollShopActionAtom, purchaseCardActionAtom } from '@/features/shop';
-import { TechCard } from '@/components/ui/TechCard';
-import { Button } from '@/components/ui/Button';
-import { GAME_CONFIG } from '@/const/game';
+import { useAtom } from "jotai";
+import { resourceAtom, handAtom, techLevelsAtom } from "@/store/game";
+import {
+  shopCardsAtom,
+  rerollShopActionAtom,
+  purchaseCardActionAtom,
+} from "@/features/shop";
+import { TechCard } from "@/components/ui/TechCard";
+import { Button } from "@/components/ui/Button";
+import { GAME_CONFIG } from "@/const/game";
 
 export function Shop() {
   const [shop] = useAtom(shopCardsAtom);
@@ -40,7 +44,7 @@ export function Shop() {
     <div>
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-bold text-cyan-700">ショップ</h2>
-        <Button 
+        <Button
           variant="primary"
           size="sm"
           onClick={handleReroll}
@@ -49,13 +53,16 @@ export function Shop() {
           リロール ({GAME_CONFIG.REROLL_COST})
         </Button>
       </div>
-      <div className="flex flex-wrap gap-2 justify-center">
+      <div className="flex flex-wrap gap-4 justify-center">
         {shop.map((card, index) => (
           <TechCard
             key={`${card.id}-${index}`}
             card={card}
+            techLevel={techLevels[card.id]}
             onClick={() => handleBuyCard(index)}
-            className={resource < card.cost ? 'opacity-50 cursor-not-allowed' : ''}
+            className={
+              resource < card.cost ? "opacity-50 cursor-not-allowed" : ""
+            }
           />
         ))}
       </div>

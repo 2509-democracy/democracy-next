@@ -1,7 +1,7 @@
-import { useAtom } from 'jotai';
-import { handAtom, selectedCardsAtom, techLevelsAtom } from '@/store/game';
-import { TechCard } from '@/components/ui/TechCard';
-import { GAME_CONFIG } from '@/const/game';
+import { useAtom } from "jotai";
+import { handAtom, selectedCardsAtom, techLevelsAtom } from "@/store/game";
+import { TechCard } from "@/components/ui/TechCard";
+import { GAME_CONFIG } from "@/const/game";
 
 export function Hand() {
   const [hand, setHand] = useAtom(handAtom);
@@ -14,6 +14,10 @@ export function Hand() {
     }
 
     const card = hand[cardIndex];
+    if (selectedCards.some((c) => c.id === card.id)) {
+      return;
+    }
+
     setSelectedCards([...selectedCards, card]);
     setHand(hand.filter((_, index) => index !== cardIndex));
   };
@@ -29,7 +33,11 @@ export function Hand() {
             techLevel={techLevels[card.id]}
             badge="手札"
             onClick={() => handleCardClick(index)}
-            className={selectedCards.length >= GAME_CONFIG.MAX_SELECTED_CARDS ? 'opacity-50 cursor-not-allowed' : ''}
+            className={
+              selectedCards.length >= GAME_CONFIG.MAX_SELECTED_CARDS
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }
           />
         ))}
       </div>
