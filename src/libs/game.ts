@@ -3,6 +3,7 @@ import { GAME_CONFIG } from '@/const/game';
 
 export {
   calculateTechLevelBonus,
+  calculateFieldTechBonus,
   calculateFinalBonus,
   upgradeTechLevels,
 } from '@/features/tech-levels';

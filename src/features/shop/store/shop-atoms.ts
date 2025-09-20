@@ -48,6 +48,18 @@ export const rerollShopActionAtom = atom(null, (get, set, params: {
   return result;
 });
 
+// ターン開始時の無料リロールアクション
+export const freeRerollShopActionAtom = atom(null, (get, set, shopSize: number) => {
+  // リソース消費なしでショップをリロール
+  const newCards = generateShopCards(shopSize);
+  set(shopStateAtom, {
+    cards: newCards,
+    isRerolling: false,
+  });
+  
+  return { success: true, newCards };
+});
+
 // カード購入アクション
 export const purchaseCardActionAtom = atom(null, (get, set, params: {
   cardIndex: number;

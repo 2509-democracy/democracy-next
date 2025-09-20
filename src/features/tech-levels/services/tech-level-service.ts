@@ -13,6 +13,25 @@ export function calculateTechLevelBonus(techLevels: Record<string, number>): num
 }
 
 /**
+ * 場に出したカードに基づいて技術ボーナスを計算する
+ * 新しい計算方法: 手札ではなく場に出したカードの技術レベルボーナス
+ */
+export function calculateFieldTechBonus(
+  selectedCards: TechCard[], 
+  techLevels: Record<string, number>
+): number {
+  let bonus = 0;
+  
+  // 場に出したカードに対してのみ技術レベルボーナスを適用
+  selectedCards.forEach(card => {
+    const techLevel = techLevels[card.id] || 0;
+    bonus += techLevel * 5;
+  });
+  
+  return bonus;
+}
+
+/**
  * 最終ボーナスを計算する
  */
 export function calculateFinalBonus(

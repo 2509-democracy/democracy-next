@@ -1,45 +1,46 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useAtom } from "jotai";
+import { AIEvaluationScreen } from '@/components/game/AIEvaluationScreen';
+import { EndGameModal } from '@/components/game/EndGameModal';
+import { FinalRanking } from '@/components/game/FinalRanking';
+import { GameStatus } from '@/components/game/GameStatus';
+import { HackathonInfo } from '@/components/game/HackathonInfo';
+import { IdeaInput } from '@/components/game/IdeaInput';
+import { PlayerList } from '@/components/game/PlayerList';
+import { RoundResult } from '@/components/game/RoundResult';
+import { ScoreSummary } from '@/components/game/ScoreSummary';
+import { SelectedCards } from '@/components/game/SelectedCards';
+import { ShopHandTabs } from '@/components/game/ShopHandTabs';
+import { CollapsibleGameLayout } from '@/components/layout/CollapsibleGameLayout';
+import { Button } from '@/components/ui/Button';
+import { TutorialModal } from "@/components/ui/tutorial/TutorialModal";
+import { GAME_CONFIG } from "@/const/game";
+import { initializeShopAtom } from '@/features/shop';
 import {
-  gameStateAtom,
-  initializeGameAtom,
-  selectedCardsAtom,
-  ideaAtom,
-  turnAtom,
-  scoreAtom,
-  techLevelsAtom,
-  resourceAtom,
-  isLoadingAtom,
-  initializeMultiGameAtom,
-} from "@/store/game";
-import { initializeShopAtom } from "@/features/shop";
-import { CollapsibleGameLayout } from "@/components/layout/CollapsibleGameLayout";
-import { GameStatus } from "@/components/game/GameStatus";
-import { HackathonInfo } from "@/components/game/HackathonInfo";
-import { SelectedCards } from "@/components/game/SelectedCards";
-import { IdeaInput } from "@/components/game/IdeaInput";
-import { ScoreSummary } from "@/components/game/ScoreSummary";
-import { PlayerList } from "@/components/game/PlayerList";
-import { ShopHandTabs } from "@/components/game/ShopHandTabs";
-import { EndGameModal } from "@/components/game/EndGameModal";
-import { AIEvaluationScreen } from "@/components/game/AIEvaluationScreen";
-import { RoundResult } from "@/components/game/RoundResult";
-import { FinalRanking } from "@/components/game/FinalRanking";
-import { Button } from "@/components/ui/Button";
-import { evaluateHackathon } from "@/libs/gemini";
-import {
-  calculateTechLevelBonus,
+  calculateFieldTechBonus,
   calculateFinalBonus,
   calculateResourceGain,
-  upgradeTechLevels,
-  isGameEnded,
   canStartHackathon,
+  isGameEnded,
+  upgradeTechLevels,
 } from "@/libs/game";
-import { GAME_CONFIG } from "@/const/game";
+import { evaluateHackathon } from '@/libs/mock-ai';
+import {
+  freeRerollShopAtom,
+  gameStateAtom,
+  ideaAtom,
+  initializeGameAtom,
+  initializeMultiGameAtom,
+  isLoadingAtom,
+  resourceAtom,
+  scoreAtom,
+  selectedCardsAtom,
+  techLevelsAtom,
+  turnAtom,
+} from '@/store/game';
 import { tutorialModalAtom } from "@/store/ui";
-import { TutorialModal } from "@/components/ui/tutorial/TutorialModal";
+import { useAtom } from "jotai";
+import { useEffect, useState } from "react";
 
 export default function SingleModePage() {
   const [gameState] = useAtom(gameStateAtom);
@@ -53,6 +54,8 @@ export default function SingleModePage() {
   const [resource, setResource] = useAtom(resourceAtom);
   const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
   const [, initializeMultiGame] = useAtom(initializeMultiGameAtom);
+  const [, freeRerollShop] = useAtom(freeRerollShopAtom);
+  
   const [tutorialOpen, setTutorialOpen] = useAtom(tutorialModalAtom);
 
   const [showEndModal, setShowEndModal] = useState(false);
@@ -104,8 +107,8 @@ export default function SingleModePage() {
         techNames: selectedCards.map((c) => c.name),
       });
 
-      // 技術レベルボーナス計算
-      const techLevelBonus = calculateTechLevelBonus(techLevels);
+      // 技術レベルボーナス計算（場に出したカードのみ）
+      const techLevelBonus = calculateFieldTechBonus(selectedCards, techLevels);
       const roundScore = result.score + techLevelBonus;
       const resourceGain = calculateResourceGain(roundScore);
 
@@ -157,7 +160,9 @@ export default function SingleModePage() {
   };
 
   const handleNextRound = () => {
-    setGamePhase("preparation");
+    // 新しいラウンド開始時に無料リロール実行
+    freeRerollShop();
+    setGamePhase('preparation');
   };
 
   const handleFinishGame = () => {
@@ -206,7 +211,7 @@ export default function SingleModePage() {
         <FinalRanking
           onRestart={handleRestart}
           onBackToHome={handleBackToHome}
-        />
+        />  
       );
 
     case "preparation":
