@@ -53,11 +53,11 @@ export function CollapsibleGameLayout({
       {/* 左ペイン */}
       <aside
         className={`relative bg-white border-r border-gray-200 shadow-sm transition-all duration-300 ease-in-out overflow-hidden ${
-          paneState.left ? "p-3" : "p-0"
+          paneState.left ? "p-3 pt-8" : "p-0"
         }`}
       >
         {/* 左ペインの展開縮小ボタン */}
-        <div className="absolute top-1/2 right-2 transform -translate-y-1/2 z-10">
+        <div className="absolute top-2 right-2 z-20">
           <PaneToggle pane="left" position="inline" />
         </div>
 
