@@ -7,6 +7,7 @@ export interface TechCard {
   difficulty: number;
   popularity: number;
   performance: number;
+  icon?: string; // アイコン画像パス
 }
 
 export interface CardPool {

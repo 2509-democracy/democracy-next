@@ -1,4 +1,4 @@
-import { TechCard } from '../types';
+import { TechCard } from "../types";
 
 export const ALL_TECH_CARDS: TechCard[] = [
   {
@@ -10,6 +10,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 2,
     popularity: 3,
     performance: 2,
+    icon: "/tech_icons/react.svg",
   },
   {
     id: "vue",
@@ -20,6 +21,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 1,
     popularity: 2,
     performance: 2,
+    icon: "/tech_icons/vuejs.svg",
   },
   {
     id: "express",
@@ -30,6 +32,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 1,
     popularity: 3,
     performance: 2,
+    icon: "/tech_icons/express.svg",
   },
   {
     id: "django",
@@ -40,26 +43,29 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 2,
     popularity: 2,
     performance: 2,
+    icon: "/tech_icons/django.svg",
   },
   {
     id: "tensorflow",
     name: "TensorFlow",
-    category: "Machine Learning",
+    category: "Other",
     cost: 3,
     level: 1,
     difficulty: 3,
     popularity: 3,
     performance: 3,
+    icon: "/tech_icons/tensorflow.svg",
   },
   {
     id: "pytorch",
     name: "PyTorch",
-    category: "Machine Learning",
+    category: "Other",
     cost: 3,
     level: 1,
     difficulty: 2,
     popularity: 3,
     performance: 3,
+    icon: "/tech_icons/pytorch.png",
   },
   {
     id: "fastapi",
@@ -70,36 +76,40 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 1,
     popularity: 2,
     performance: 3,
+    icon: "/tech_icons/fastapi.png",
   },
   {
     id: "jwt",
     name: "JWT",
-    category: "Authentication",
+    category: "Other",
     cost: 1,
     level: 1,
     difficulty: 1,
     popularity: 2,
     performance: 2,
+    icon: "/tech_icons/jwt.png",
   },
   {
     id: "redis",
     name: "Redis",
-    category: "Data Store",
+    category: "Other",
     cost: 2,
     level: 1,
     difficulty: 1,
     popularity: 3,
     performance: 3,
+    icon: "/tech_icons/radis.png",
   },
   {
     id: "oauth",
     name: "OAuth",
-    category: "Authentication",
+    category: "Other",
     cost: 2,
     level: 1,
     difficulty: 3,
     popularity: 2,
     performance: 1,
+    icon: "/tech_icons/oauth.png",
   },
   {
     id: "nextjs",
@@ -110,6 +120,7 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 3,
     popularity: 3,
     performance: 3,
+    icon: "/tech_icons/nextjs.svg",
   },
   {
     id: "threejs",
@@ -120,15 +131,17 @@ export const ALL_TECH_CARDS: TechCard[] = [
     difficulty: 3,
     popularity: 1,
     performance: 1,
+    icon: "/tech_icons/threejs.png",
   },
   {
     id: "websocket",
     name: "WebSocket",
-    category: "Communication",
+    category: "Other",
     cost: 2,
     level: 1,
     difficulty: 2,
     popularity: 2,
     performance: 3,
+    icon: "/tech_icons/websocket.svg",
   },
 ];
