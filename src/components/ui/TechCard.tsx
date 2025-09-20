@@ -27,24 +27,25 @@ export function TechCard({
 }: TechCardProps) {
   return (
     <div
-      className={`relative bg-white border-2 border-gray-300 p-2 rounded-lg w-40 cursor-pointer transition-transform duration-200 hover:scale-105 hover:border-blue-400 ${className}`}
+      className={`relative bg-white border-2 border-gray-300 p-1.5 rounded-lg w-28 cursor-pointer transition-transform duration-200 hover:scale-105 hover:border-blue-400 ${className}`}
       onClick={onClick}
     >
+      {/* カテゴリバッジをリソースバッジと同じ形状・配置に変更 */}
       <div
-        className={`absolute top-4 left-1 text-xs px-2 py-1 rounded-full text-white ${
+        className={`absolute -top-1 -left-1 text-[10px] px-1 py-0.5 rounded-full text-white ${
           CATEGORY_COLORS[card.category] ?? "bg-gray-500"
         }`}
         style={{ zIndex: 2 }}
       >
         {card.category}
       </div>
-      <div className="font-bold text-center text-gray-900 text-s truncate mb-1 mt-8">
+      <div className="font-bold text-center text-gray-900 text-base truncate mb-1 mt-6">
         {card.name}
       </div>
-      <div className="text-center text-gray-600 mb-4">
+      <div className="text-center text-gray-600 mb-2 text-xs">
         Lv.{techLevel ?? card.level}
       </div>
-      <div className="mb-2 text-xs w-full">
+      <div className="mb-1 text-[10px] w-full">
         <table className="w-full">
           <tbody>
             {[
@@ -60,7 +61,8 @@ export function TechCard({
           </tbody>
         </table>
       </div>
-      <div className="absolute -top-1 -right-1 bg-gray-800 text-white text-xs px-1 py-0.5 rounded-full">
+      {/* リソースバッジ（右上） */}
+      <div className="absolute -top-1 -right-1 bg-gray-800 text-white text-[10px] px-1 py-0.5 rounded-full">
         {badge}
       </div>
     </div>
