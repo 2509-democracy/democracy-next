@@ -8,7 +8,6 @@ import {
   initializeGameAtom, 
   selectedCardsAtom,
   ideaAtom,
-  turnAtom,
   scoreAtom,
   techLevelsAtom,
   resourceAtom,
@@ -41,7 +40,6 @@ import {
   calculateFieldTechBonus,
   calculateResourceGain,
   upgradeTechLevels,
-  isGameEnded,
   canStartHackathon
 } from '@/libs/game';
 import { GAME_CONFIG } from '@/const/game';
@@ -72,7 +70,6 @@ export default function MultiModePage() {
   const [, initializeShop] = useAtom(initializeShopAtom);
   const [selectedCards, setSelectedCards] = useAtom(selectedCardsAtom);
   const [idea, setIdea] = useAtom(ideaAtom);
-  const [turn, setTurn] = useAtom(turnAtom);
   const [score, setScore] = useAtom(scoreAtom);
   const [techLevels, setTechLevels] = useAtom(techLevelsAtom);
   const [resource, setResource] = useAtom(resourceAtom);
@@ -216,26 +213,8 @@ export default function MultiModePage() {
       setSelectedCards([]);
       setIdea('');
 
-      // 結果表示タイマー（10秒）
-      startTimer(10);
-
-      // 10秒後に次のターンへ
-      setTimeout(() => {
-        const nextTurn = turn + 1;
-        setTurn(nextTurn);
-
-        if (isGameEnded(nextTurn)) {
-          // ゲーム終了
-          // 最終結果に遷移
-          setPhase('final_ranking', '最終結果発表');
-          stopTimer();
-        } else {
-          // 次のターン開始時に無料リロール実行
-          freeRerollShop();
-          setMultiState(prev => ({ ...prev, currentPhase: 'preparation' }));
-          startTimer(45); // 次の準備フェーズ
-        }
-      }, 10000);
+      // 結果表示（手動で次へ進む）
+      stopTimer(); // タイマーを停止
 
     } catch (error) {
       console.error('Hackathon execution error:', error);
@@ -274,6 +253,7 @@ export default function MultiModePage() {
       // 新しいラウンド開始時に無料リロール実行
       freeRerollShop();
       setPhase('preparation', `第${nextRound}ラウンド - 準備フェーズ`);
+      startTimer(45); // 準備フェーズのタイマー開始
     }
   };
   
