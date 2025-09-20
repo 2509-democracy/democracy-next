@@ -22,19 +22,6 @@ export function CollapsibleGameLayout({
 }: CollapsibleGameLayoutProps) {
   const [paneState] = useAtom(paneStateAtom);
 
-  // 動的なグリッド列設定
-  const getGridColumns = () => {
-    const leftWidth = paneState.left ? "220px" : "0px";
-    const rightWidth = paneState.right ? "280px" : "0px";
-    return `[${leftWidth}_1fr_${rightWidth}]`;
-  };
-
-  // 動的なグリッド行設定
-  const getGridRows = () => {
-    const bottomHeight = paneState.bottom ? "320px" : "40px";
-    return `[60px_1fr_${bottomHeight}]`;
-  };
-
   return (
     <div
       className="h-screen bg-gray-50 grid overflow-hidden transition-all duration-300 ease-in-out"

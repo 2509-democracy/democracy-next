@@ -8,6 +8,7 @@ export type {
 // Services
 export {
   calculateTechLevelBonus,
+  calculateFieldTechBonus,
   calculateFinalBonus,
   getTechLevelBonusDetails,
   upgradeTechLevels,

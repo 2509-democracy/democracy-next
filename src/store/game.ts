@@ -120,6 +120,13 @@ export const rerollShopAtom = atom(null, (get, set) => {
   set(shopAtom, shuffledPool);
 });
 
+// ターン開始時の無料リロールatom
+export const freeRerollShopAtom = atom(null, (get, set) => {
+  // リソース消費なしでショップをリロール
+  const shuffledPool = getShuffledPool({ shuffled: true, size: GAME_CONFIG.SHOP_SIZE });
+  set(shopAtom, shuffledPool);
+});
+
 export const buyCardAtom = atom(null, (get, set, cardIndex: number) => {
   const state = get(gameStateAtom);
   const card = state.shop[cardIndex];
@@ -157,7 +164,6 @@ export interface MultiPlayer {
   hand: TechCard[];
   selectedCards: TechCard[];
   idea: string;
-  isReady: boolean;
   isConnected: boolean;
 }
 
@@ -293,38 +299,5 @@ export const setPhaseAtom = atom(
       currentPhase: phase,
       phaseMessage: message || phaseMessages[phase],
     });
-  }
-);
-
-// 全プレイヤーの準備完了チェック
-export const checkAllReadyAtom = atom((get) => {
-  const multiState = get(multiGameStateAtom);
-  return multiState.players.length > 0 && multiState.players.every(p => p.isReady);
-});
-
-// プレイヤーの準備状態を切り替え
-export const togglePlayerReadyAtom = atom(
-  null,
-  (get, set, playerId: string) => {
-    const multiState = get(multiGameStateAtom);
-    const updatedPlayers = multiState.players.map(player =>
-      player.id === playerId ? { ...player, isReady: !player.isReady } : player
-    );
-    
-    set(multiGameStateAtom, {
-      ...multiState,
-      players: updatedPlayers,
-    });
-    
-    // 全員準備完了の場合、フェーズを進める
-    const allReady = updatedPlayers.every(p => p.isReady);
-    if (allReady && multiState.currentPhase === 'preparation') {
-      // 「お題が出そろいました！」フェーズに遷移
-      set(setPhaseAtom, 'submission_review', 'お題が出そろいました！');
-      // 5秒後にai_evaluationフェーズに自動遷移
-      setTimeout(() => {
-        set(setPhaseAtom, 'ai_evaluation', 'AI評価中...');
-      }, 5000);
-    }
   }
 );

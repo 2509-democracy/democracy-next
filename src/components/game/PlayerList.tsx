@@ -21,7 +21,9 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
   // マルチモード用のプレイヤー表示
   if (isMultiMode) {
     const playersToShow = multiGameState.players;
-    const limitedPlayers = maxPlayers ? playersToShow.slice(0, maxPlayers) : playersToShow;
+    // スコア順でソート（リアルタイムランキング統合）
+    const sortedPlayers = [...playersToShow].sort((a, b) => b.score - a.score);
+    const limitedPlayers = maxPlayers ? sortedPlayers.slice(0, maxPlayers) : sortedPlayers;
 
     if (limitedPlayers.length === 0) {
       return (
@@ -34,23 +36,39 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-800">参加者</h3>
+          <h3 className="text-base font-semibold text-gray-800">参加者ランキング</h3>
           <span className="text-xs text-gray-500">
             {playersToShow.length} / 4
           </span>
         </div>
         
         <div className="space-y-2 max-h-80 overflow-y-auto">
-          {limitedPlayers.map((player) => (
-            <div key={player.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-2">
+          {limitedPlayers.map((player, index) => (
+            <div 
+              key={player.id} 
+              className={`flex items-center justify-between p-3 rounded-lg ${
+                player.id === multiGameState.currentPlayerId
+                  ? 'bg-blue-50 border-2 border-blue-200'
+                  : 'bg-gray-50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
                 <div className={`w-3 h-3 rounded-full ${player.isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-                <span className="text-sm font-medium">
-                  {player.name} {player.id === multiGameState.currentPlayerId && '(あなた)'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-bold ${
+                    index === 0 ? 'text-yellow-600' :
+                    index === 1 ? 'text-gray-500' :
+                    index === 2 ? 'text-amber-600' : 'text-gray-400'
+                  }`}>
+                    #{index + 1}
+                  </span>
+                  <span className="text-sm font-medium">
+                    {player.name} {player.id === multiGameState.currentPlayerId && '(あなた)'}
+                  </span>
+                </div>
               </div>
               <div className="flex items-center gap-4 text-xs">
-                <span className="text-yellow-600">{player.score}pt</span>
+                <span className="text-lg font-bold text-yellow-600">{player.score}pt</span>
               </div>
             </div>
           ))}

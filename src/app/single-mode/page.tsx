@@ -13,6 +13,7 @@ import {
   resourceAtom,
   isLoadingAtom,
   initializeMultiGameAtom,
+  freeRerollShopAtom,
 } from '@/store/game';
 import { initializeShopAtom } from '@/features/shop';
 import { CollapsibleGameLayout } from '@/components/layout/CollapsibleGameLayout';
@@ -30,7 +31,7 @@ import { FinalRanking } from '@/components/game/FinalRanking';
 import { Button } from '@/components/ui/Button';
 import { evaluateHackathon } from '@/libs/gemini';
 import { 
-  calculateTechLevelBonus, 
+  calculateFieldTechBonus,
   calculateFinalBonus, 
   calculateResourceGain,
   upgradeTechLevels,
@@ -51,6 +52,7 @@ export default function SingleModePage() {
   const [resource, setResource] = useAtom(resourceAtom);
   const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
   const [, initializeMultiGame] = useAtom(initializeMultiGameAtom);
+  const [, freeRerollShop] = useAtom(freeRerollShopAtom);
   
   const [showEndModal, setShowEndModal] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
@@ -71,7 +73,6 @@ export default function SingleModePage() {
       hand: [],
       selectedCards: [],
       idea: '',
-      isReady: false,
       isConnected: true,
     };
     
@@ -96,8 +97,8 @@ export default function SingleModePage() {
         techNames: selectedCards.map(c => c.name),
       });
 
-      // 技術レベルボーナス計算
-      const techLevelBonus = calculateTechLevelBonus(techLevels);
+      // 技術レベルボーナス計算（場に出したカードのみ）
+      const techLevelBonus = calculateFieldTechBonus(selectedCards, techLevels);
       const roundScore = result.score + techLevelBonus;
       const resourceGain = calculateResourceGain(roundScore);
 
@@ -150,6 +151,8 @@ export default function SingleModePage() {
   };
 
   const handleNextRound = () => {
+    // 新しいラウンド開始時に無料リロール実行
+    freeRerollShop();
     setGamePhase('preparation');
   };
 

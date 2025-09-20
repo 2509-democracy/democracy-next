@@ -1,16 +1,13 @@
 import { useAtom } from 'jotai';
 import { multiGameStateAtom } from '@/store/game';
-import { Button } from '../ui/Button';
 import { TechCard } from '@/components/ui/TechCard';
 
 interface SubmissionReviewProps {
   onProceedToEvaluation: () => void;
 }
 
-export function SubmissionReview({ onProceedToEvaluation }: SubmissionReviewProps) {
+export function SubmissionReview({ }: SubmissionReviewProps) {
   const [multiGameState] = useAtom(multiGameStateAtom);
-  
-  const isHost = multiGameState.isHost;
   
   return (
     <div className="space-y-6">
@@ -77,13 +74,6 @@ export function SubmissionReview({ onProceedToEvaluation }: SubmissionReviewProp
                     </p>
                   </div>
                 </div>
-                <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  player.isReady 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {player.isReady ? '提出済み' : '準備中'}
-                </div>
               </div>
               
               {/* 選択された技術カード */}
@@ -122,31 +112,12 @@ export function SubmissionReview({ onProceedToEvaluation }: SubmissionReviewProp
         })}
       </div>
       
-      {/* 進行ボタン（ホストのみ表示） */}
-      {isHost && (
-        <div className="flex justify-center pt-4">
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={onProceedToEvaluation}
-            disabled={!multiGameState.players.every(p => p.isReady)}
-          >
-            {multiGameState.players.every(p => p.isReady) 
-              ? 'AI評価を開始' 
-              : '全プレイヤーの準備完了を待っています...'
-            }
-          </Button>
-        </div>
-      )}
-      
-      {/* 非ホスト向けメッセージ */}
-      {!isHost && (
-        <div className="text-center py-4">
-          <p className="text-gray-600">
-            ホストがAI評価を開始するまでお待ちください...
-          </p>
-        </div>
-      )}
+      {/* 自動進行メッセージ */}
+      <div className="text-center py-4">
+        <p className="text-gray-600">
+          制限時間終了後、自動的にAI評価が開始されます...
+        </p>
+      </div>
     </div>
   );
 }

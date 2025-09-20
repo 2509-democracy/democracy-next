@@ -18,6 +18,7 @@ import {
   stopTimerAtom,
   updateTimerAtom,
   setPhaseAtom,
+  freeRerollShopAtom,
   MultiPlayer,
 } from '@/store/game';
 import { initializeShopAtom } from '@/features/shop';
@@ -26,8 +27,8 @@ import { GameStatus } from '@/components/game/GameStatus';
 import { HackathonInfo } from '@/components/game/HackathonInfo';
 import { SelectedCards } from '@/components/game/SelectedCards';
 import { IdeaInput } from '@/components/game/IdeaInput';
-import { ScoreSummary } from '@/components/game/ScoreSummary';
 import { PlayerList } from '@/components/game/PlayerList';
+import { TechLevels } from '@/components/game/TechLevels';
 import { ShopHandTabs } from '@/components/game/ShopHandTabs';
 import { MatchingScreen } from '@/components/game/MatchingScreen';
 import { SubmissionReview } from '@/components/game/SubmissionReview';
@@ -37,7 +38,7 @@ import { FinalRanking } from '@/components/game/FinalRanking';
 import { Button } from '@/components/ui/Button';
 import { evaluateHackathon } from '@/libs/gemini';
 import { 
-  calculateTechLevelBonus, 
+  calculateFieldTechBonus,
   calculateResourceGain,
   upgradeTechLevels,
   isGameEnded,
@@ -61,7 +62,6 @@ const createDummyPlayer = (name: string): MultiPlayer => ({
   hand: [],
   selectedCards: [],
   idea: '',
-  isReady: false,
   isConnected: true,
 });
 
@@ -83,6 +83,7 @@ export default function MultiModePage() {
   const [, stopTimer] = useAtom(stopTimerAtom);
   const [, updateTimer] = useAtom(updateTimerAtom);
   const [, setPhase] = useAtom(setPhaseAtom);
+  const [, freeRerollShop] = useAtom(freeRerollShopAtom);
   
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -106,7 +107,6 @@ export default function MultiModePage() {
           hand: [],
           selectedCards: [],
           idea: '',
-          isReady: false,
           isConnected: true,
         }
       ];
@@ -136,8 +136,8 @@ export default function MultiModePage() {
           stopTimer();
           
           if (multiState.currentPhase === 'preparation') {
-            // 準備時間終了 → 自動でハッカソン実行  
-            handleStartHackathon();
+            // 準備時間終了 → 自動でハッカソン実行（強制実行）
+            handleStartHackathon(true);
           }
         }
       }, 1000);
@@ -148,8 +148,15 @@ export default function MultiModePage() {
   }, [multiState.isTimerActive, multiState.timeLeft, multiState.currentPhase, updateTimer, stopTimer]); // handleStartHackathon is hoisted function declaration
 
   // 関数宣言でhoistingを利用
-  async function handleStartHackathon() {
-    if (!canStartHackathon(selectedCards, idea) || !gameState.hackathonInfo) {
+  async function handleStartHackathon(forceStart = false) {
+    // 制限時間終了時は強制実行、通常時はバリデーションチェック
+    if (!forceStart && (!canStartHackathon(selectedCards, idea) || !gameState.hackathonInfo)) {
+      return;
+    }
+
+    // ハッカソン情報がない場合のフォールバック
+    if (!gameState.hackathonInfo) {
+      console.warn('ハッカソン情報がありません。スキップします。');
       return;
     }
 
@@ -159,16 +166,16 @@ export default function MultiModePage() {
       // 評価フェーズに遷移
       setPhase('ai_evaluation', 'AI評価中...');
 
-      // AI評価を実行
+      // AI評価を実行（空の場合はデフォルト値使用）
       const result = await evaluateHackathon({
         theme: gameState.hackathonInfo.theme,
         direction: gameState.hackathonInfo.direction,
-        idea,
-        techNames: selectedCards.map(c => c.name),
+        idea: idea.trim() || 'アイデア未入力',
+        techNames: selectedCards.length > 0 ? selectedCards.map(c => c.name) : ['技術なし'],
       });
 
-      // 技術レベルボーナス計算
-      const techLevelBonus = calculateTechLevelBonus(techLevels);
+      // 技術レベルボーナス計算（場に出したカードのみ）
+      const techLevelBonus = calculateFieldTechBonus(selectedCards, techLevels);
       const roundScore = result.score + techLevelBonus;
       const resourceGain = calculateResourceGain(roundScore);
 
@@ -197,12 +204,10 @@ export default function MultiModePage() {
                 techLevels: newTechLevels,
                 selectedCards: [],
                 idea: '',
-                isReady: false,
               }
             : {
                 ...player,
                 score: player.score + Math.floor(Math.random() * 50) + 20, // ダミーAIのスコア
-                isReady: false,
               }
         )
       }));
@@ -225,7 +230,8 @@ export default function MultiModePage() {
           setPhase('final_ranking', '最終結果発表');
           stopTimer();
         } else {
-          // 次のターン開始
+          // 次のターン開始時に無料リロール実行
+          freeRerollShop();
           setMultiState(prev => ({ ...prev, currentPhase: 'preparation' }));
           startTimer(45); // 次の準備フェーズ
         }
@@ -265,6 +271,8 @@ export default function MultiModePage() {
     if (nextRound > multiState.maxRounds) {
       setPhase('final_ranking', '最終結果発表');
     } else {
+      // 新しいラウンド開始時に無料リロール実行
+      freeRerollShop();
       setPhase('preparation', `第${nextRound}ラウンド - 準備フェーズ`);
     }
   };
@@ -317,7 +325,7 @@ export default function MultiModePage() {
               </Button>
             </div>
           }
-          leftPanel={<ScoreSummary isMultiMode={true} />}
+          leftPanel={<TechLevels />}
           centerPanel={
             <div className="space-y-4">
               <HackathonInfo />
@@ -349,7 +357,7 @@ export default function MultiModePage() {
               </Button>
             </div>
           }
-          leftPanel={<ScoreSummary isMultiMode={true} />}
+          leftPanel={<TechLevels />}
           centerPanel={<SubmissionReview onProceedToEvaluation={handleProceedToEvaluation} />}
           rightPanel={<PlayerList isMultiMode={true} />}
           bottomPanel={<ShopHandTabs />}
@@ -367,7 +375,7 @@ export default function MultiModePage() {
               </Button>
             </div>
           }
-          leftPanel={<ScoreSummary isMultiMode={true} />}
+          leftPanel={<TechLevels />}
           centerPanel={<AIEvaluationScreen onEvaluationComplete={handleEvaluationComplete} />}
           rightPanel={<PlayerList isMultiMode={true} />}
           bottomPanel={<ShopHandTabs />}
@@ -385,7 +393,7 @@ export default function MultiModePage() {
               </Button>
             </div>
           }
-          leftPanel={<ScoreSummary isMultiMode={true} />}
+          leftPanel={<TechLevels />}
           centerPanel={
             <RoundResult 
               onNextRound={handleNextRound} 
