@@ -1,11 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { Button } from '@/components/ui/Button';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 // グローバルCSSとしてkeyframesを追加（styled-jsx使用）
-import { Button } from "@/components/ui/Button";
-import Image from "next/image";
-import { channelA, insertUser } from "@/features/multi-mode/matching/matching";
 
 export default function Home() {
   const router = useRouter();
@@ -15,7 +14,6 @@ export default function Home() {
   };
 
   const handleMultiMode = () => {
-    insertUser();
     router.push("/multi-mode");
   };
 
