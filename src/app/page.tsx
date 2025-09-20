@@ -11,8 +11,7 @@ export default function Home() {
   };
 
   const handleMultiMode = () => {
-    // 未実装のため、今は何もしない
-    alert('マルチモードは未実装です。');
+    router.push('/multi-mode');
   };
 
   return (
@@ -42,7 +41,7 @@ export default function Home() {
             className="w-full"
             onClick={handleMultiMode}
           >
-            マルチモード（未実装）
+            マルチモード
           </Button>
         </div>
         
