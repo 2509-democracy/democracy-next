@@ -79,6 +79,7 @@ export default function SingleModePage() {
       currentPhase: 'preparation',
       timeLeft: 0,
       isTimerActive: false,
+      phaseMessage: "準備フェーズ"
     });
   }, [initializeGame, initializeShop, setMultiGameState]);
 
