@@ -1,5 +1,4 @@
 import { useAtom } from 'jotai';
-import { useState, useEffect } from 'react';
 import { multiGameStateAtom } from '@/store/game';
 import { Button } from '../ui/Button';
 import { TechCard } from '../ui/TechCard';
@@ -23,28 +22,6 @@ interface PlayerResult {
 
 export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
   const [multiGameState] = useAtom(multiGameStateAtom);
-  const [timeLeft, setTimeLeft] = useState(60); // 60秒のタイマー
-  
-  // 60秒のカウントダウンタイマー
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          // タイマー終了時に自動で次のラウンドに進む
-          const isLastRound = multiGameState.currentRound >= multiGameState.maxRounds;
-          if (isLastRound) {
-            onFinishGame();
-          } else {
-            onNextRound();
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [multiGameState.currentRound, multiGameState.maxRounds, onNextRound, onFinishGame]);
   
   // プレイヤー結果を生成（実際のデータを使用）
   const playerResults: PlayerResult[] = multiGameState.players
@@ -96,8 +73,8 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
         {/* タイマー表示 */}
         <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-4 py-2 rounded-lg font-medium">
           <span className="text-sm">⏰ 自動進行まで</span>
-          <span className={`text-lg font-bold ${timeLeft <= 10 ? 'text-red-600' : 'text-orange-800'}`}>
-            {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+          <span className={`text-lg font-bold ${multiGameState.timeLeft <= 10 ? 'text-red-600' : 'text-orange-800'}`}>
+            {Math.floor(multiGameState.timeLeft / 60)}:{(multiGameState.timeLeft % 60).toString().padStart(2, '0')}
           </span>
         </div>
       </div>
@@ -226,8 +203,8 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
         </div>
         
         <p className="text-xs text-gray-500 text-center">
-          {timeLeft > 0 
-            ? `${timeLeft}秒後に自動進行します（手動で進むこともできます）`
+          {multiGameState.timeLeft > 0 
+            ? `${multiGameState.timeLeft}秒後に自動進行します（手動で進むこともできます）`
             : '自動進行中...'
           }
         </p>

@@ -135,6 +135,14 @@ export default function MultiModePage() {
           if (multiState.currentPhase === 'preparation') {
             // 準備時間終了 → 自動でハッカソン実行（強制実行）
             handleStartHackathon(true);
+          } else if (multiState.currentPhase === 'round_result') {
+            // 結果表示時間終了 → 次のラウンドまたは最終結果に進行
+            const nextRound = multiState.currentRound + 1;
+            if (nextRound > multiState.maxRounds) {
+              handleFinishGame();
+            } else {
+              handleNextRound();
+            }
           }
         }
       }, 1000);
@@ -213,8 +221,8 @@ export default function MultiModePage() {
       setSelectedCards([]);
       setIdea('');
 
-      // 結果表示（手動で次へ進む）
-      stopTimer(); // タイマーを停止
+      // 結果表示（60秒のタイマー開始）
+      startTimer(60); // 60秒タイマー開始
 
     } catch (error) {
       console.error('Hackathon execution error:', error);
@@ -229,9 +237,8 @@ export default function MultiModePage() {
       gameStarted: true,
     }));
     setPhase('preparation', '第1ラウンド - 準備フェーズ');
-    // タイマー開始（45秒）
     console.log('Starting initial timer for round 1'); // デバッグログ
-    startTimer(3);
+    startTimer(60);
   };
   
   const handleProceedToEvaluation = () => {
@@ -254,7 +261,7 @@ export default function MultiModePage() {
       freeRerollShop();
       setPhase('preparation', `第${nextRound}ラウンド - 準備フェーズ`);
       console.log('Starting timer for round', nextRound); // デバッグログ
-      startTimer(45); // 準備フェーズのタイマー開始
+      startTimer(60); // 準備フェーズのタイマー開始
     }
   };
   
