@@ -2,7 +2,7 @@ import { useAtom } from 'jotai';
 import { useState, useEffect } from 'react';
 import { multiGameStateAtom } from '@/store/game';
 import { Button } from '../ui/Button';
-import { evaluateHackathon } from '@/libs/gemini';
+import { evaluateHackathon } from '@/libs/mock-ai';
 
 interface AIEvaluationScreenProps {
   onEvaluationComplete: () => void;

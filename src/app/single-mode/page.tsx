@@ -29,7 +29,7 @@ import { AIEvaluationScreen } from '@/components/game/AIEvaluationScreen';
 import { RoundResult } from '@/components/game/RoundResult';
 import { FinalRanking } from '@/components/game/FinalRanking';
 import { Button } from '@/components/ui/Button';
-import { evaluateHackathon } from '@/libs/gemini';
+import { evaluateHackathon } from '@/libs/mock-ai';
 import { 
   calculateFieldTechBonus,
   calculateFinalBonus, 
@@ -202,7 +202,7 @@ export default function SingleModePage() {
         <FinalRanking 
           onRestart={handleRestart}
           onBackToHome={handleBackToHome}
-        />
+        />  
       );
 
     case 'preparation':
