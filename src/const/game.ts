@@ -1,6 +1,17 @@
-export const THEMES = ["心", "光", "力", "命", "夢", "空", "時", "愛", "道", "美"];
+export const THEMES = [
+  "心",
+  "光",
+  "力",
+  "命",
+  "夢",
+  "空",
+  "時",
+  "愛",
+  "道",
+  "美",
+];
 
-export const DIRECTIONS = ["アイデア重視", "技術重視"];
+export const DIRECTIONS = ["技術重視", "ビジネス性重視", "おもしろさ重視"];
 
 export const GAME_CONFIG = {
   MAX_TURNS: 2,
