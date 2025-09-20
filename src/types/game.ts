@@ -21,6 +21,7 @@ export type GamePhase = "preparation" | "execution" | "result" | "ended";
 
 // マルチフェーズゲーム用の拡張GamePhase
 export type MultiGamePhase = 
+  | 'waiting'            // 初期化待機
   | 'matching'           // マッチング待機
   | 'preparation'        // 準備フェーズ
   | 'submission_review'  // お題・技術確認

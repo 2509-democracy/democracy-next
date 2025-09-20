@@ -30,6 +30,7 @@ import { PlayerList } from '@/components/game/PlayerList';
 import { TechLevels } from '@/components/game/TechLevels';
 import { ShopHandTabs } from '@/components/game/ShopHandTabs';
 import { MatchingScreen } from '@/components/game/MatchingScreen';
+import { Waiting } from '@/components/game/Waiting';
 import { SubmissionReview } from '@/components/game/SubmissionReview';
 import { AIEvaluationScreen } from '@/components/game/AIEvaluationScreen';
 import { RoundResult } from '@/components/game/RoundResult';
@@ -230,6 +231,10 @@ export default function MultiModePage() {
   }
 
   // フェーズハンドラー
+  const handleWaitingComplete = () => {
+    setPhase('matching', 'プレイヤーを待っています...');
+  };
+  
   const handleStartGame = () => {
     // ゲーム開始状態に変更し、準備フェーズに移行
     setMultiState(prev => ({ 
@@ -272,11 +277,11 @@ export default function MultiModePage() {
   const handleRestart = () => {
     setMultiState(prev => ({ 
       ...prev, 
-      currentPhase: 'matching',
+      currentPhase: 'waiting',
       currentRound: 1,
       roundResults: [],
       submissions: [],
-      phaseMessage: 'プレイヤーを待っています...'
+      phaseMessage: 'ゲームの準備をしています...'
     }));
   };
 
@@ -299,6 +304,9 @@ export default function MultiModePage() {
 
   // SPA内フェーズルーティング
   switch (multiState.currentPhase) {
+    case 'waiting':
+      return <Waiting onComplete={handleWaitingComplete} />;
+      
     case 'matching':
       return <MatchingScreen onStartGame={handleStartGame} />;
       
