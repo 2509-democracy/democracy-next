@@ -55,13 +55,27 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
         };
       }
       
+      // 実際のラウンド結果からアイデアと技術カードを取得
+      let actualIdea = player.idea;
+      let actualTechCards = player.selectedCards;
+      
+      // 最新のラウンド結果から実際の提出内容を取得
+      const latestRoundResult = multiGameState.roundResults[multiGameState.roundResults.length - 1];
+      if (latestRoundResult) {
+        const playerResult = latestRoundResult.playerResults.find(pr => pr.playerId === player.id);
+        if (playerResult) {
+          actualIdea = playerResult.submission.idea;
+          actualTechCards = playerResult.submission.selectedCards;
+        }
+      }
+      
       return {
         playerId: player.id,
         playerName: player.name,
         score: player.score,
         rank: 0, // 後で計算
-        idea: player.idea,
-        techCards: player.selectedCards,
+        idea: actualIdea,
+        techCards: actualTechCards,
         aiEvaluation,
         totalScore: player.score,
       };
