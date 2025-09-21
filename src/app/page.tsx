@@ -3,18 +3,31 @@
 import { Button } from '@/components/ui/Button';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import './styles/button-effects.css';
 
 // グローバルCSSとしてkeyframesを追加（styled-jsx使用）
 
 export default function Home() {
   const router = useRouter();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
 
   const handleSingleMode = () => {
-    router.push("/single-mode");
+    setIsLoaded(false);
+    setTimeout(() => {
+      router.push("/single-mode");
+    }, 500);
   };
 
   const handleMultiMode = () => {
-    router.push("/multi-mode");
+    setIsLoaded(false);
+    setTimeout(() => {
+      router.push("/multi-mode");
+    }, 500);
   };
 
   return (
@@ -50,22 +63,25 @@ export default function Home() {
           }
         }
       `}</style>
-      <div className="max-w-md mx-auto text-center space-y-8 relative z-10">
-        <div className="flex justify-center">
+      <div className="max-w-md mx-auto text-center space-y-8 relative z-10 px-4">
+        <div className="flex justify-center transform hover:scale-105 transition-transform duration-300">
           <Image
             src="/logo_white_fulfilled.png"
             alt="ハッカソン・デベロッパー"
             width={500}
             height={120}
             className="max-w-full h-auto"
+            priority
           />
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6 sm:space-y-8">
           <Button
             variant="primary"
             size="lg"
-            className="w-3/4 yusei-magic-regular mx-auto"
+            className={`w-3/4 yusei-magic-regular mx-auto game-button game-button-primary ${
+              isLoaded ? 'button-enter' : 'opacity-0'
+            }`}
             onClick={handleSingleMode}
           >
             シングルモード
@@ -74,7 +90,9 @@ export default function Home() {
           <Button
             variant="secondary"
             size="lg"
-            className="w-3/4 yusei-magic-regular mx-auto"
+            className={`w-3/4 yusei-magic-regular mx-auto game-button game-button-secondary ${
+              isLoaded ? 'button-enter' : 'opacity-0'
+            }`}
             onClick={handleMultiMode}
           >
             マルチモード
