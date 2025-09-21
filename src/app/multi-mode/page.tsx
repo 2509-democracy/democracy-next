@@ -176,6 +176,7 @@ export default function MultiModePage() {
         techNames,
         techLevels: techLevelsSelected,
       });
+      console.log(result);
 
       // 技術レベルボーナス計算（場に出したカードのみ）
       const techLevelBonus = calculateFieldTechBonus(selectedCards, techLevels);
@@ -212,7 +213,12 @@ export default function MultiModePage() {
                 ...player,
                 score: player.score + Math.floor(Math.random() * 50) + 20, // ダミーAIのスコア
               }
-        )
+        ),
+        // AI評価結果を保存
+        currentRoundAIEvaluations: {
+          ...prev.currentRoundAIEvaluations,
+          [multiState.currentPlayerId]: result,
+        },
       }));
 
       // カードリセット

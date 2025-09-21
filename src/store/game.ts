@@ -1,25 +1,25 @@
 import { atom } from 'jotai';
-import { GameState, HackathonInfo, MultiGamePhase, PlayerSubmission, RoundResult } from '@/types/game';
+import { GameState, HackathonInfo, MultiGamePhase, PlayerSubmission, RoundResult, AIEvaluationResponse } from '@/types/game';
 import { generateCardPool, getShuffledPool } from '@/features/card-pool';
 import { THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
 import { TechCard } from '@/features/card-pool';
 
 // フェーズ持続時間の定数（秒単位）
 export const PHASE_DURATIONS: Record<MultiGamePhase, number> = {
-  waiting: 0,           
-  matching: 0,          
-  preparation: 60,       
+  waiting: 0,
+  matching: 0,
+  preparation: 20,
   submission_review: 10,
-  ai_evaluation: 0,     
-  round_result: 60,     
-  final_ranking: 0,     
+  ai_evaluation: 0,
+  round_result: 20,
+  final_ranking: 0,
 };
 
 // タイムスタンプベースのタイマー計算関数
 export function calculateTimeLeft(phaseStartTime: Date, phase: MultiGamePhase): number {
   const duration = PHASE_DURATIONS[phase];
   if (duration === 0) return 0; // 無制限の場合
-  
+
   const elapsed = (Date.now() - phaseStartTime.getTime()) / 1000;
   return Math.max(0, Math.floor(duration - elapsed));
 }
@@ -33,7 +33,7 @@ export function calculatePhaseEndTime(phaseStartTime: Date, phase: MultiGamePhas
 export function isPhaseExpired(phaseStartTime: Date, phase: MultiGamePhase): boolean {
   const duration = PHASE_DURATIONS[phase];
   if (duration === 0) return false; // 無制限の場合は期限切れなし
-  
+
   const elapsed = Date.now() - phaseStartTime.getTime();
   console.log(phaseStartTime, phase, elapsed, duration * 1000);
   return elapsed > (duration * 1000);
@@ -150,7 +150,7 @@ export const rerollShopAtom = atom(null, (get, set) => {
   if (state.resource < GAME_CONFIG.REROLL_COST) return;
 
   set(resourceAtom, state.resource - GAME_CONFIG.REROLL_COST);
-  
+
   const shuffledPool = getShuffledPool({ shuffled: true, size: GAME_CONFIG.SHOP_SIZE });
   set(shopAtom, shuffledPool);
 });
@@ -165,19 +165,19 @@ export const freeRerollShopAtom = atom(null, (get, set) => {
 export const buyCardAtom = atom(null, (get, set, cardIndex: number) => {
   const state = get(gameStateAtom);
   const card = state.shop[cardIndex];
-  
+
   if (!card || state.resource < card.cost) return;
 
   // リソースを消費
   set(resourceAtom, state.resource - card.cost);
-  
+
   // 手札に追加
   set(handAtom, [...state.hand, card]);
-  
+
   // ショップから削除
   const newShop = state.shop.filter((_, index) => index !== cardIndex);
   set(shopAtom, newShop);
-  
+
   // 技術レベルを設定
   const newTechLevels = { ...state.techLevels };
   newTechLevels[card.id] = newTechLevels[card.id] || card.level;
@@ -221,6 +221,8 @@ export interface MultiGameState {
   // タイムスタンプベースタイマー用フィールド
   gameStartTime?: Date; // ゲーム開始時刻
   currentPhaseStartTime?: Date; // 現在フェーズの開始時刻
+  // AI評価結果保存用
+  currentRoundAIEvaluations?: Record<string, AIEvaluationResponse>; // プレイヤーID -> AI評価結果
 }
 
 // マルチゲーム初期状態
@@ -239,6 +241,7 @@ const initialMultiGameState: MultiGameState = {
   submissions: [],
   gameStartTime: undefined,
   currentPhaseStartTime: undefined,
+  currentRoundAIEvaluations: undefined,
 };
 
 // マルチゲーム用atom
@@ -268,7 +271,37 @@ export const initializeMultiGameAtom = atom(
       currentPhase: 'waiting',
       phaseMessage: 'ゲームの準備をしています...',
     });
-    
+
+    // 現在のプレイヤーの状態をゲーム状態に反映
+    const currentPlayer = players.find(p => p.id === playerId);
+    if (currentPlayer) {
+      set(gameStateAtom, {
+        ...get(gameStateAtom),
+        resource: currentPlayer.resource,
+        score: currentPlayer.score,
+        techLevels: currentPlayer.techLevels,
+        hand: currentPlayer.hand,
+        selectedCards: currentPlayer.selectedCards,
+      });
+      set(ideaAtom, currentPlayer.idea);
+    }
+  }
+);
+
+// シングルプレイモード初期化action
+export const initializeSingleGameAtom = atom(
+  null,
+  (get, set, players: MultiPlayer[], playerId: string) => {
+    set(multiGameStateAtom, {
+      ...initialMultiGameState,
+      mode: 'single',
+      players,
+      currentPlayerId: playerId,
+      gameStarted: true, // シングルプレイでは即座にゲーム開始
+      currentPhase: 'preparation',
+      phaseMessage: '準備フェーズ - アイデアを考えよう！',
+    });
+
     // 現在のプレイヤーの状態をゲーム状態に反映
     const currentPlayer = players.find(p => p.id === playerId);
     if (currentPlayer) {
@@ -335,7 +368,7 @@ export const setPhaseAtom = atom(
       round_result: '結果発表！',
       final_ranking: '最終ランキング',
     };
-    
+
     set(multiGameStateAtom, {
       ...multiState,
       currentPhase: phase,
@@ -356,24 +389,24 @@ export const updateTimerFromTimestampAtom = atom(
   (get, set) => {
     const multiState = get(multiGameStateAtom);
     if (!multiState.currentPhaseStartTime) return;
-    
+
     const timeLeft = calculateTimeLeft(multiState.currentPhaseStartTime, multiState.currentPhase);
     const isExpired = isPhaseExpired(multiState.currentPhaseStartTime, multiState.currentPhase);
-    
+
     console.log('[Timer Debug] updateTimerFromTimestamp:', {
       phase: multiState.currentPhase,
       timeLeft,
       isExpired,
       elapsed: Date.now() - multiState.currentPhaseStartTime.getTime()
     });
-    
+
     set(multiGameStateAtom, {
       ...multiState,
       timeLeft: Math.max(0, Math.floor(timeLeft)),
       // 修正: 期限切れになるまで継続（timeLeft > 0の条件を削除）
       isTimerActive: PHASE_DURATIONS[multiState.currentPhase] > 0 && !isExpired,
     });
-    
+
     return { timeLeft: Math.floor(timeLeft), isExpired };
   }
 );

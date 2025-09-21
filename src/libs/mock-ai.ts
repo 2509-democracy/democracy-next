@@ -14,10 +14,12 @@ const COMMENT_TEMPLATES = [
 /**
  * ダミー画像URL生成
  */
-const generateMockImageUrl = (theme: string, idea: string): string => {
-  const imageId = Math.floor(Math.random() * 1000) + 1;
-  return `https://picsum.photos/400/300?random=${imageId}&blur=1`;
-};
+function generateMockImageUrl(theme: string, idea: string): string {
+  // テーマとアイデアに基づいてダミー画像URLを生成
+  const encodedTheme = encodeURIComponent(theme);
+  const encodedIdea = encodeURIComponent(idea.substring(0, 50)); // アイデアの最初の50文字
+  return `https://picsum.photos/400/300?random=${Date.now()}&theme=${encodedTheme}&idea=${encodedIdea}`;
+}
 
 /**
  * モックAI評価実装
@@ -36,24 +38,37 @@ export async function evaluateHackathon({
   // 各項目の採点ロジック
   const ideaLength = idea.trim().length;
   const techCount = techNames.length;
-  const response = await fetch(
-    process.env.NEXT_PUBLIC_IPOINT_API_KEY as string,
-    {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json",
+  
+  // 環境変数が設定されていない場合はモックデータを使用
+  let response;
+  if (!process.env.NEXT_PUBLIC_IPOINT_API_KEY) {
+    response = {
+      breakdown: {
+        criteria1: Math.floor(Math.random() * 8) + 12, // 12-20点
+        criteria2: Math.floor(Math.random() * 8) + 12, // 12-20点
+        criteria3: Math.floor(Math.random() * 8) + 12, // 12-20点
       },
-      body: JSON.stringify({
-        idea,
-        techNames,
-        techLevels,
-        theme,
-        direction,
-      }),
-    }
-  ).then((res) => res.json());
-  console.log(response);
+      generatedImageUrl: generateMockImageUrl(theme, idea),
+    };
+  } else {
+    response = await fetch(
+      process.env.NEXT_PUBLIC_IPOINT_API_KEY as string,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idea,
+          techNames,
+          techLevels,
+          theme,
+          direction,
+        }),
+      }
+    ).then((res) => res.json());
+    console.log(response);
+  }
 
   // 採点項目1: アイデアの独創性（20点満点）
   const criteria1 = response.breakdown.criteria1;
@@ -88,8 +103,8 @@ export async function evaluateHackathon({
 
   const totalScore = criteria1 + criteria2 + criteria3 + demoScore;
 
-  // ランダムな講評を選択
-  const comment =
+  // APIレスポンスにcommentがある場合はそれを使用、ない場合はテンプレートを使用
+  const comment = response.comment || 
     COMMENT_TEMPLATES[Math.floor(Math.random() * COMMENT_TEMPLATES.length)];
 
   // ダミー画像URL生成

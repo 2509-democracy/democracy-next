@@ -18,8 +18,8 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
   const [currentPlayer] = useAtom(currentPlayerAtom);
   const [gameMode] = useAtom(gameModeAtom);
 
-  // マルチモード用のプレイヤー表示
-  if (isMultiMode) {
+  // シングルモードでもmultiGameStateを使用するように修正
+  if (multiGameState.mode === 'single' || isMultiMode) {
     const playersToShow = multiGameState.players;
     // スコア順でソート（リアルタイムランキング統合）
     const sortedPlayers = [...playersToShow].sort((a, b) => b.score - a.score);
@@ -36,9 +36,11 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-800">参加者ランキング</h3>
+          <h3 className="text-base font-semibold text-gray-800">
+            {multiGameState.mode === 'single' ? 'プレイヤー' : '参加者ランキング'}
+          </h3>
           <span className="text-xs text-gray-500">
-            {playersToShow.length} / 4
+            {multiGameState.mode === 'single' ? 'シングル' : `${playersToShow.length} / 4`}
           </span>
         </div>
         
