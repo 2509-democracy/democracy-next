@@ -50,8 +50,8 @@ export function PlayerInfoCard({ player, rank, showDetails = true }: PlayerInfoP
             {player.name}
           </span>
           {player.isCurrentPlayer && (
-            <span className="rounded-full border border-cyan-300/50 bg-cyan-500/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.3em] text-cyan-100">
-              YOU
+            <span className="rounded-full border border-cyan-300/50 bg-cyan-500/30 px-2 py-0.5 text-[10px] font-semibold tracking-[0.3em] text-cyan-100">
+              あなた
             </span>
           )}
         </div>
@@ -84,7 +84,7 @@ export function PlayerInfoCard({ player, rank, showDetails = true }: PlayerInfoP
 
             {Object.keys(player.techLevels).length > 0 && (
               <div className="border-t border-cyan-400/10 pt-3 text-slate-300">
-                <span className="text-[10px] uppercase tracking-[0.3em] text-cyan-200">Tech Levels</span>
+                <span className="text-[10px] tracking-[0.3em] text-cyan-200">技術レベル</span>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {Object.entries(player.techLevels).slice(0, 3).map(([tech, level]) => (
                     <span key={tech} className="rounded-full border border-cyan-400/30 bg-slate-900/70 px-3 py-1 text-[10px] font-semibold text-cyan-100 uppercase tracking-[0.3em]">

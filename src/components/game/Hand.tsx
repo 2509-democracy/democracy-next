@@ -31,7 +31,7 @@ export function Hand() {
             key={`${card.id}-${index}`}
             card={card}
             techLevel={techLevels[card.id]}
-            badge="HAND"
+            badge="手札"
             onClick={() => handleCardClick(index)}
             className={`shadow-[0_0_25px_rgba(249,115,22,0.3)] ${
               selectedCards.length >= GAME_CONFIG.MAX_SELECTED_CARDS
@@ -41,8 +41,8 @@ export function Hand() {
           />
         ))}
         {hand.length === 0 && (
-          <span className="text-xs uppercase tracking-[0.3em] text-slate-400">
-            No cards in bench
+          <span className="text-xs tracking-[0.3em] text-slate-400">
+            手札にカードがありません
           </span>
         )}
       </div>

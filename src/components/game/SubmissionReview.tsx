@@ -72,7 +72,7 @@ export function SubmissionReview({ }: SubmissionReviewProps) {
                       )}
                     </h4>
                     <p className="text-xs text-slate-400">
-                      現在のスコア: {player.score}pt
+                      現在のスコア: {player.score}点
                     </p>
                   </div>
                 </div>

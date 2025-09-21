@@ -149,8 +149,8 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
                     )}
                   </h3>
                   <div className="mt-1 flex flex-wrap items-center gap-4 text-xs text-slate-400">
-                    <span>総合スコア: {result.totalScore}pt</span>
-                    <span>今回獲得: +{result.aiEvaluation.totalScore}pt</span>
+                    <span>総合スコア: {result.totalScore}点</span>
+                    <span>今回獲得: +{result.aiEvaluation.totalScore}点</span>
                   </div>
                 </div>
               </div>

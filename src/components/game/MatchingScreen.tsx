@@ -1,12 +1,11 @@
 import { useAtom } from 'jotai';
 import { useEffect } from 'react';
-import { 
-  isConnectedAtom, 
-  matchingStateAtom, 
-  connectAtom, 
-  disconnectAtom, 
-  joinMatchingAtom, 
-  leaveMatchingAtom 
+import {
+  isConnectedAtom,
+  matchingStateAtom,
+  connectAtom,
+  joinMatchingAtom,
+  leaveMatchingAtom
 } from '@/store/websocket';
 import { Button } from '../ui/Button';
 
@@ -18,7 +17,6 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
   const [isConnected] = useAtom(isConnectedAtom);
   const [matching] = useAtom(matchingStateAtom);
   const [, connect] = useAtom(connectAtom);
-  const [, disconnect] = useAtom(disconnectAtom);
   const [,  joinMatching] = useAtom(joinMatchingAtom);
   const [, leaveMatching] = useAtom(leaveMatchingAtom);
 
@@ -45,7 +43,7 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
     return () => {
       isCancelled = true;
     };
-  }, []); // 空の依存配列 - 初回マウント時のみ実行
+  }, [connect]); // connectの参照が更新された場合に再実行
 
   // マッチング成功時の処理
   useEffect(() => {
@@ -120,7 +118,7 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
             <h1 className="text-3xl font-black uppercase tracking-[0.5em] text-cyan-200 mb-3">
               マルチプレイヤーモード
             </h1>
-            <p className="text-sm uppercase tracking-[0.4em] text-slate-400">Teamfight tactics inspired lobby</p>
+            <p className="text-sm tracking-[0.4em] text-slate-400">戦略ロビーへようこそ</p>
           </div>
 
           {/* 接続状態 */}

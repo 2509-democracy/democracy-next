@@ -21,14 +21,14 @@ export function ScoreSummary({ isMultiMode = false }: ScoreSummaryProps) {
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-amber-400/30 bg-slate-950/70 p-4 shadow-[0_0_35px_rgba(250,204,21,0.25)]">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-amber-200">Current Score</h3>
+        <h3 className="mb-3 text-sm font-semibold tracking-[0.35em] text-amber-200">現在のスコア</h3>
         <div className="text-center text-3xl font-black text-amber-200 tracking-[0.4em]">
           {score}
         </div>
       </div>
 
       <div className="rounded-2xl border border-cyan-400/30 bg-slate-950/70 p-4 shadow-[0_0_35px_rgba(56,189,248,0.25)]">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">Tech Levels</h3>
+        <h3 className="mb-3 text-sm font-semibold tracking-[0.35em] text-cyan-200">技術レベル</h3>
         <div className="space-y-2 overflow-y-auto pr-1 text-xs">
           {Object.keys(techLevels).length > 0 ? (
             Object.entries(techLevels).map(([techId, level]) => (
@@ -38,7 +38,7 @@ export function ScoreSummary({ isMultiMode = false }: ScoreSummaryProps) {
               </div>
             ))
           ) : (
-            <div className="text-center text-[10px] uppercase tracking-[0.4em] text-slate-400">
+            <div className="text-center text-[10px] tracking-[0.4em] text-slate-400">
               技術なし
             </div>
           )}
@@ -47,7 +47,7 @@ export function ScoreSummary({ isMultiMode = false }: ScoreSummaryProps) {
 
       {techLevelBonus > 0 && (
         <div className="rounded-2xl border border-emerald-400/30 bg-slate-950/70 p-4 shadow-[0_0_35px_rgba(16,185,129,0.25)]">
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.35em] text-emerald-200">Bonus</h3>
+          <h3 className="mb-2 text-sm font-semibold tracking-[0.35em] text-emerald-200">ボーナス</h3>
           <div className="text-center text-2xl font-black text-emerald-200 tracking-[0.4em]">+{techLevelBonus}</div>
         </div>
       )}

@@ -28,8 +28,8 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
 
     if (limitedPlayers.length === 0) {
       return (
-        <div className="rounded-xl border border-cyan-400/30 bg-slate-950/60 py-6 text-center text-xs uppercase tracking-[0.4em] text-slate-400 shadow-[0_0_30px_rgba(56,189,248,0.25)]">
-          Waiting for challengers...
+        <div className="rounded-xl border border-cyan-400/30 bg-slate-950/60 py-6 text-center text-xs tracking-[0.4em] text-slate-400 shadow-[0_0_30px_rgba(56,189,248,0.25)]">
+          参加者を待っています...
         </div>
       );
     }
@@ -37,9 +37,9 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">Summoner Board</h3>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400">
-            {playersToShow.length} / 4 ONLINE
+          <h3 className="text-sm font-semibold tracking-[0.35em] text-cyan-200">参加者ランキング</h3>
+          <span className="text-[10px] font-semibold tracking-[0.3em] text-slate-400">
+            {playersToShow.length} / 4 参加中
           </span>
         </div>
 
@@ -64,13 +64,13 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
                     #{index + 1}
                   </span>
                   <span className="text-sm font-semibold text-slate-100">
-                    {player.name} {player.id === multiGameState.currentPlayerId && <span className="text-cyan-300">(YOU)</span>}
+                    {player.name} {player.id === multiGameState.currentPlayerId && <span className="text-cyan-300">（あなた）</span>}
                   </span>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="rounded-full border border-amber-300/40 bg-slate-900/70 px-3 py-1 text-sm font-bold text-amber-200 shadow-[0_0_20px_rgba(250,204,21,0.35)]">
-                  {player.score} PT
+                  {player.score}点
                 </span>
               </div>
             </div>
@@ -95,8 +95,8 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
 
   if (limitedPlayers.length === 0) {
     return (
-      <div className="rounded-xl border border-cyan-400/30 bg-slate-950/60 py-6 text-center text-xs uppercase tracking-[0.4em] text-slate-400 shadow-[0_0_30px_rgba(56,189,248,0.25)]">
-        {gameMode === 'single' ? 'Solo mode ready' : 'No allies detected'}
+      <div className="rounded-xl border border-cyan-400/30 bg-slate-950/60 py-6 text-center text-xs tracking-[0.4em] text-slate-400 shadow-[0_0_30px_rgba(56,189,248,0.25)]">
+        {gameMode === 'single' ? 'シングルプレイモード' : '他のプレイヤーはいません'}
       </div>
     );
   }
@@ -104,11 +104,11 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">
-          {showCurrentPlayer ? 'Summoner' : 'Allies'}
+        <h3 className="text-sm font-semibold tracking-[0.35em] text-cyan-200">
+          {showCurrentPlayer ? 'プレイヤー' : '他のプレイヤー'}
         </h3>
-        <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400">
-          {gameMode === 'single' ? 'SOLO' : `${playerRanking.length} PLAYERS`}
+        <span className="text-[10px] font-semibold tracking-[0.3em] text-slate-400">
+          {gameMode === 'single' ? 'シングル' : `${playerRanking.length}人`}
         </span>
       </div>
 

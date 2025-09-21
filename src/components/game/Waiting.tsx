@@ -45,7 +45,7 @@ export function Waiting({ onComplete }: WaitingProps) {
             <div className="rounded-2xl border border-cyan-400/30 bg-slate-950/70 p-4">
               <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 mb-2">あなたのID</p>
               <p className="break-all font-mono text-sm text-cyan-100">
-                {currentPlayer?.id || 'loading...'}
+                {currentPlayer?.id || '読み込み中...'}
               </p>
             </div>
           </div>

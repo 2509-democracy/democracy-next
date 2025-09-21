@@ -180,7 +180,7 @@ export function FinalRanking({ onRestart, onBackToHome }: FinalRankingProps) {
                         key={roundIndex}
                         className="rounded-xl border border-slate-700/50 bg-slate-950/80 p-3 text-center text-slate-200"
                       >
-                        <div className="text-[10px] uppercase tracking-[0.3em] text-slate-400">R{roundIndex + 1}</div>
+                        <div className="text-[10px] tracking-[0.3em] text-slate-400">第{roundIndex + 1}ラウンド</div>
                         <div className="text-sm font-semibold text-white">{score}</div>
                       </div>
                     ))}

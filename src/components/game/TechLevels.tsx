@@ -13,8 +13,8 @@ export function TechLevels({
   if (techLevelEntries.length === 0) {
     return (
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">Tech Mastery</h3>
-        <div className="rounded-xl border border-cyan-400/30 bg-slate-950/60 py-6 text-center text-xs uppercase tracking-[0.4em] text-slate-400 shadow-[0_0_30px_rgba(56,189,248,0.25)]">
+        <h3 className="text-sm font-semibold tracking-[0.35em] text-cyan-200">技術レベル</h3>
+        <div className="rounded-xl border border-cyan-400/30 bg-slate-950/60 py-6 text-center text-xs tracking-[0.4em] text-slate-400 shadow-[0_0_30px_rgba(56,189,248,0.25)]">
           技術レベルなし
         </div>
       </div>
@@ -23,7 +23,7 @@ export function TechLevels({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">Tech Mastery</h3>
+      <h3 className="text-sm font-semibold tracking-[0.35em] text-cyan-200">技術レベル</h3>
       <div className="space-y-3 overflow-y-auto pr-1">
         {techLevelEntries.map(([techId, level]) => {
           const tech = getCardById(techId);
