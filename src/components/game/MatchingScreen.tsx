@@ -19,7 +19,7 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
   const [matching] = useAtom(matchingStateAtom);
   const [, connect] = useAtom(connectAtom);
   const [, disconnect] = useAtom(disconnectAtom);
-  const [, joinMatching] = useAtom(joinMatchingAtom);
+  const [,  joinMatching] = useAtom(joinMatchingAtom);
   const [, leaveMatching] = useAtom(leaveMatchingAtom);
   
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'connected'>('idle');

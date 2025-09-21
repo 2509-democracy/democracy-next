@@ -114,6 +114,7 @@ export const joinMatchingAtom = atom(
   (get, set) => {
     const client = get(webSocketClientAtom);
     const isConnected = get(isConnectedAtom);
+    console.log(client, isConnected)
     if (client && isConnected) {
       client.joinMatching();
       const currentMatching = get(matchingStateAtom);
