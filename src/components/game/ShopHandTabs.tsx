@@ -10,16 +10,16 @@ export function ShopHandTabs() {
 
   if (!isBottomPaneOpen) {
     return (
-      <div className="flex items-center gap-4 h-full">
+      <div className="flex h-full items-center gap-4 text-[10px] uppercase tracking-[0.3em]">
         <button
           onClick={() => {
             setActiveTab('shop');
             if (!isBottomPaneOpen) setBottomPaneOpen(true);
           }}
-          className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+          className={`rounded-full border px-4 py-2 font-semibold transition-all ${
             activeTab === 'shop'
-              ? 'bg-cyan-600 text-white'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              ? 'border-cyan-400/50 bg-cyan-500/30 text-cyan-100 shadow-[0_0_25px_rgba(56,189,248,0.35)]'
+              : 'border-slate-700/60 bg-slate-900/70 text-slate-300 hover:border-cyan-300/40 hover:text-cyan-100'
           }`}
         >
           ショップ
@@ -29,41 +29,41 @@ export function ShopHandTabs() {
             setActiveTab('hand');
             if (!isBottomPaneOpen) setBottomPaneOpen(true);
           }}
-          className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+          className={`rounded-full border px-4 py-2 font-semibold transition-all ${
             activeTab === 'hand'
-              ? 'bg-orange-600 text-white'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              ? 'border-orange-400/60 bg-orange-500/30 text-orange-100 shadow-[0_0_25px_rgba(249,115,22,0.35)]'
+              : 'border-slate-700/60 bg-slate-900/70 text-slate-300 hover:border-orange-300/40 hover:text-orange-100'
           }`}
         >
           手札
         </button>
-        <span className="text-xs text-gray-500">
-          {activeTab === 'shop' ? 'ショップ' : '手札'}を選択中
+        <span className="text-slate-400">
+          {activeTab === 'shop' ? 'ショップ' : '手札'} を選択中
         </span>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden">
       {/* タブヘッダー - コンパクト化 */}
-      <div className="flex border-b border-gray-200 flex-shrink-0">
+      <div className="flex flex-shrink-0 border-b border-cyan-400/30 bg-slate-950/70">
         <button
           onClick={() => setActiveTab('shop')}
-          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+          className={`px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] transition-all ${
             activeTab === 'shop'
-              ? 'border-blue-500 text-blue-600 bg-blue-50'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ? 'border-b-2 border-cyan-300 text-cyan-200'
+              : 'border-b-2 border-transparent text-slate-400 hover:border-cyan-200/40 hover:text-cyan-100'
           }`}
         >
           ショップ
         </button>
         <button
           onClick={() => setActiveTab('hand')}
-          className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+          className={`px-5 py-3 text-xs font-semibold uppercase tracking-[0.3em] transition-all ${
             activeTab === 'hand'
-              ? 'border-blue-500 text-blue-600 bg-blue-50'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ? 'border-b-2 border-orange-300 text-orange-200'
+              : 'border-b-2 border-transparent text-slate-400 hover:border-orange-200/40 hover:text-orange-100'
           }`}
         >
           手札
@@ -71,7 +71,7 @@ export function ShopHandTabs() {
       </div>
 
       {/* タブコンテンツ - 高さ制限とスクロール */}
-      <div className="flex-1 overflow-y-auto p-2 min-h-0">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-slate-950/60 p-4">
         {activeTab === 'shop' && <Shop />}
         {activeTab === 'hand' && <Hand />}
       </div>

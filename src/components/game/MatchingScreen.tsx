@@ -1,12 +1,11 @@
 import { useAtom } from 'jotai';
 import { useEffect } from 'react';
-import { 
-  isConnectedAtom, 
-  matchingStateAtom, 
-  connectAtom, 
-  disconnectAtom, 
-  joinMatchingAtom, 
-  leaveMatchingAtom 
+import {
+  isConnectedAtom,
+  matchingStateAtom,
+  connectAtom,
+  joinMatchingAtom,
+  leaveMatchingAtom
 } from '@/store/websocket';
 import { Button } from '../ui/Button';
 
@@ -18,7 +17,6 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
   const [isConnected] = useAtom(isConnectedAtom);
   const [matching] = useAtom(matchingStateAtom);
   const [, connect] = useAtom(connectAtom);
-  const [, disconnect] = useAtom(disconnectAtom);
   const [,  joinMatching] = useAtom(joinMatchingAtom);
   const [, leaveMatching] = useAtom(leaveMatchingAtom);
 
@@ -45,7 +43,7 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
     return () => {
       isCancelled = true;
     };
-  }, []); // 空の依存配列 - 初回マウント時のみ実行
+  }, [connect]); // connectの参照が更新された場合に再実行
 
   // マッチング成功時の処理
   useEffect(() => {
@@ -90,43 +88,55 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
   const getStatusColor = () => {
     switch (matching.status) {
       case 'waiting':
-        return 'text-blue-600';
+        return 'text-cyan-200';
       case 'matched':
-        return 'text-green-600';
+        return 'text-emerald-200';
       case 'error':
-        return 'text-red-600';
+        return 'text-rose-300';
       default:
-        return 'text-gray-600';
+        return 'text-slate-300';
     }
   };
-  
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 p-6">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: "url(/title_image.png)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "brightness(0.3)",
+        }}
+        aria-hidden="true"
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-slate-950/85 to-black/95" aria-hidden="true" />
+      <div className="relative z-10 w-full max-w-3xl">
+        <div className="overflow-hidden rounded-3xl border border-cyan-400/30 bg-slate-950/70 p-10 shadow-[0_0_80px_rgba(56,189,248,0.35)] backdrop-blur-xl">
           {/* ヘッダー */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <div className="mb-10 text-center">
+            <h1 className="text-3xl font-black uppercase tracking-[0.5em] text-cyan-200 mb-3">
               マルチプレイヤーモード
             </h1>
+            <p className="text-sm tracking-[0.4em] text-slate-400">戦略ロビーへようこそ</p>
           </div>
-          
+
           {/* 接続状態 */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="mb-6 rounded-2xl border border-cyan-400/30 bg-slate-950/70 p-6 shadow-[0_0_35px_rgba(56,189,248,0.25)]">
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">
                   接続状態
                 </h3>
-                <p className={`text-sm ${getStatusColor()}`}>
+                <p className={`text-xs uppercase tracking-[0.3em] ${getStatusColor()}`}>
                   {getStatusMessage()}
                 </p>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className={`w-3 h-3 rounded-full ${
-                  isConnected ? 'bg-green-500' : 'bg-red-500'
-                }`}></div>
-                <span className="text-xs text-gray-500">
+              <div className="flex items-center space-x-3">
+                <div className={`h-3 w-3 rounded-full ${
+                  isConnected ? 'bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.8)]' : 'bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.7)]'
+                }`} />
+                <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400">
                   {isConnected ? '接続中' : '未接続'}
                 </span>
               </div>
@@ -135,25 +145,25 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
 
           {/* マッチング情報 */}
           {matching.status === 'waiting' && (
-            <div className="bg-blue-50 rounded-lg p-4 mb-6">
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">
+            <div className="mb-6 rounded-2xl border border-cyan-400/30 bg-slate-950/70 p-6 shadow-[0_0_35px_rgba(56,189,248,0.25)]">
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">
                 マッチング中
               </h3>
-              <div className="flex items-center justify-between">
-                <div className="text-blue-600">
+              <div className="flex items-center justify-between text-slate-100">
+                <div className="text-xs uppercase tracking-[0.3em] text-slate-300">
                   キューに参加中...
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-blue-700">
+                  <div className="text-3xl font-black text-cyan-200">
                     {matching.queueSize} / 4
                   </div>
-                  <div className="text-xs text-blue-600">参加者数</div>
+                  <div className="text-[10px] uppercase tracking-[0.3em] text-cyan-200">参加者数</div>
                 </div>
               </div>
-              <div className="mt-3">
-                <div className="w-full bg-blue-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+              <div className="mt-4">
+                <div className="h-2 w-full rounded-full bg-slate-800">
+                  <div
+                    className="h-2 rounded-full bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 transition-all duration-500"
                     style={{ width: `${(matching.queueSize / 4) * 100}%` }}
                   ></div>
                 </div>
@@ -163,17 +173,17 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
 
           {/* マッチング成功 */}
           {matching.status === 'matched' && (
-            <div className="bg-green-50 rounded-lg p-4 mb-6">
-              <h3 className="text-lg font-semibold text-green-800 mb-2">
+            <div className="mb-6 rounded-2xl border border-emerald-400/30 bg-slate-950/70 p-6 shadow-[0_0_35px_rgba(16,185,129,0.35)]">
+              <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.35em] text-emerald-200">
                 マッチング完了！
               </h3>
-              <p className="text-green-600 mb-3">
+              <p className="mb-3 text-xs uppercase tracking-[0.3em] text-emerald-200">
                 ルーム {matching.roomId} に参加しました
               </p>
-              <div className="space-y-1">
-                <p className="text-sm text-green-700 font-medium">参加プレイヤー:</p>
+              <div className="space-y-1 text-xs text-emerald-100">
+                <p className="font-semibold uppercase tracking-[0.3em]">参加プレイヤー:</p>
                 {matching.players.map((player: string, index: number) => (
-                  <p key={index} className="text-sm text-green-600">
+                  <p key={index} className="uppercase tracking-[0.3em]">
                     • プレイヤー {index + 1}
                   </p>
                 ))}
@@ -183,32 +193,34 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
 
           {/* エラー表示 */}
           {matching.status === 'error' && (
-            <div className="bg-red-50 rounded-lg p-4 mb-6">
-              <h3 className="text-lg font-semibold text-red-800 mb-2">
+            <div className="mb-6 rounded-2xl border border-rose-400/30 bg-slate-950/70 p-6 shadow-[0_0_35px_rgba(244,63,94,0.35)]">
+              <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.35em] text-rose-300">
                 エラーが発生しました
               </h3>
-              <p className="text-red-600">
+              <p className="text-xs uppercase tracking-[0.3em] text-rose-200">
                 {matching.error}
               </p>
             </div>
           )}
 
           {/* 操作ボタン */}
-          <div className="flex justify-center space-x-4">
+          <div className="flex justify-center gap-4">
             {matching.status === 'idle' && isConnected && (
               <Button
                 onClick={handleJoinMatching}
                 variant="primary"
+                className="border border-cyan-300/40 bg-gradient-to-r from-cyan-500/70 to-sky-500/70 text-xs uppercase tracking-[0.35em] text-white shadow-[0_0_35px_rgba(56,189,248,0.35)] hover:from-cyan-400/70 hover:to-sky-400/70"
                 disabled={!isConnected}
               >
                 マッチングに参加
               </Button>
             )}
-            
+
             {matching.status === 'waiting' && (
               <Button
                 onClick={handleLeaveMatching}
                 variant="secondary"
+                className="border border-orange-300/40 bg-orange-500/30 text-xs uppercase tracking-[0.35em] text-orange-100 shadow-[0_0_30px_rgba(249,115,22,0.35)] hover:bg-orange-500/50"
               >
                 マッチングをキャンセル
               </Button>
@@ -216,6 +228,7 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
 
             <Button
               variant="secondary"
+              className="border border-slate-700/60 bg-slate-900/70 text-xs uppercase tracking-[0.35em] text-slate-300 hover:border-cyan-300/40 hover:text-cyan-100"
               onClick={() => window.location.href = '/'}
             >
               ホームに戻る

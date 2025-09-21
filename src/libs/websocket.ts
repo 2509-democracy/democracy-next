@@ -2,7 +2,24 @@ import { v4 as uuidv4 } from 'uuid';
 
 export interface WebSocketMessage {
   type: string;
-  [key: string]: any;
+  [key: string]: unknown;
+}
+
+type WebSocketPayload = Record<string, unknown>;
+
+export interface MatchingJoinedMessage extends WebSocketMessage {
+  type: 'matching_joined';
+  queueSize?: number;
+}
+
+export interface MatchingLeftMessage extends WebSocketMessage {
+  type: 'matching_left';
+}
+
+export interface MatchFoundMessage extends WebSocketMessage {
+  type: 'match_found';
+  roomId?: string;
+  players?: string[];
 }
 
 export interface WebSocketEventHandlers {
@@ -10,9 +27,9 @@ export interface WebSocketEventHandlers {
   onDisconnect?: () => void;
   onMessage?: (message: WebSocketMessage) => void;
   onError?: (error: Event) => void;
-  onMatchingJoined?: (data: any) => void;
-  onMatchingLeft?: (data: any) => void;
-  onMatchFound?: (data: any) => void;
+  onMatchingJoined?: (data: MatchingJoinedMessage) => void;
+  onMatchingLeft?: (data: MatchingLeftMessage) => void;
+  onMatchFound?: (data: MatchFoundMessage) => void;
 }
 
 export class WebSocketClient {
@@ -59,21 +76,21 @@ export class WebSocketClient {
           reject(error);
         };
 
-        this.socket.onmessage = (event) => {
+        this.socket.onmessage = (event: MessageEvent<string>) => {
           try {
-            const message: WebSocketMessage = JSON.parse(event.data);
+            const message = JSON.parse(event.data) as WebSocketMessage;
             console.log('WebSocket message received:', message);
             
             // メッセージタイプ別の処理
             switch (message.type) {
               case 'matching_joined':
-                this.handlers.onMatchingJoined?.(message);
+                this.handlers.onMatchingJoined?.(message as MatchingJoinedMessage);
                 break;
               case 'matching_left':
-                this.handlers.onMatchingLeft?.(message);
+                this.handlers.onMatchingLeft?.(message as MatchingLeftMessage);
                 break;
               case 'match_found':
-                this.handlers.onMatchFound?.(message);
+                this.handlers.onMatchFound?.(message as MatchFoundMessage);
                 break;
               default:
                 this.handlers.onMessage?.(message);
@@ -111,7 +128,7 @@ export class WebSocketClient {
     }
   }
 
-  sendMessage(message: any): void {
+  sendMessage(message: WebSocketPayload): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       const messageToSend = {
         ...message,

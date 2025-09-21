@@ -17,6 +17,7 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
   const [otherPlayers] = useAtom(otherPlayersAtom);
   const [currentPlayer] = useAtom(currentPlayerAtom);
   const [gameMode] = useAtom(gameModeAtom);
+  const [resource] = useAtom(resourceAtom);
 
   // マルチモード用のプレイヤー表示
   if (isMultiMode) {
@@ -27,55 +28,57 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
 
     if (limitedPlayers.length === 0) {
       return (
-        <div className="text-center text-gray-500 text-sm py-4">
+        <div className="rounded-xl border border-cyan-400/30 bg-slate-950/60 py-6 text-center text-xs tracking-[0.4em] text-slate-400 shadow-[0_0_30px_rgba(56,189,248,0.25)]">
           参加者を待っています...
         </div>
       );
     }
 
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-gray-800">参加者ランキング</h3>
-          <span className="text-xs text-gray-500">
-            {playersToShow.length} / 4
+          <h3 className="text-sm font-semibold tracking-[0.35em] text-cyan-200">参加者ランキング</h3>
+          <span className="text-[10px] font-semibold tracking-[0.3em] text-slate-400">
+            {playersToShow.length} / 4 参加中
           </span>
         </div>
-        
-        <div className="space-y-2 max-h-80 overflow-y-auto">
+
+        <div className="space-y-3 overflow-y-auto pr-1">
           {limitedPlayers.map((player, index) => (
-            <div 
-              key={player.id} 
-              className={`flex items-center justify-between p-3 rounded-lg ${
+            <div
+              key={player.id}
+              className={`relative flex items-center justify-between rounded-2xl border px-4 py-3 shadow-[0_0_35px_rgba(56,189,248,0.25)] transition-transform duration-200 hover:-translate-y-1 ${
                 player.id === multiGameState.currentPlayerId
-                  ? 'bg-blue-50 border-2 border-blue-200'
-                  : 'bg-gray-50'
+                  ? 'border-sky-400/60 bg-slate-950/80'
+                  : 'border-slate-700/60 bg-slate-950/70'
               }`}
             >
               <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${player.isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm font-bold ${
-                    index === 0 ? 'text-yellow-600' :
-                    index === 1 ? 'text-gray-500' :
-                    index === 2 ? 'text-amber-600' : 'text-gray-400'
+                <div className={`h-3 w-3 rounded-full ${player.isConnected ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]' : 'bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.6)]'}`} />
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm font-black tracking-[0.35em] ${
+                    index === 0 ? 'text-amber-300' :
+                    index === 1 ? 'text-slate-200' :
+                    index === 2 ? 'text-orange-300' : 'text-slate-400'
                   }`}>
                     #{index + 1}
                   </span>
-                  <span className="text-sm font-medium text-gray-700  ">
-                    {player.name} {player.id === multiGameState.currentPlayerId && '(あなた)'}
+                  <span className="text-sm font-semibold text-slate-100">
+                    {player.name} {player.id === multiGameState.currentPlayerId && <span className="text-cyan-300">（あなた）</span>}
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-4 text-xs">
-                <span className="text-lg font-bold text-yellow-600">{player.score}pt</span>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="rounded-full border border-amber-300/40 bg-slate-900/70 px-3 py-1 text-sm font-bold text-amber-200 shadow-[0_0_20px_rgba(250,204,21,0.35)]">
+                  {player.score}点
+                </span>
               </div>
             </div>
           ))}
         </div>
-        
+
         {maxPlayers && playersToShow.length > maxPlayers && (
-          <div className="text-center text-xs text-gray-500 pt-2 border-t border-gray-100">
+          <div className="border-t border-cyan-400/10 pt-2 text-center text-[10px] uppercase tracking-[0.3em] text-slate-400">
             他 {playersToShow.length - maxPlayers} 人
           </div>
         )}
@@ -84,9 +87,7 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
   }
 
   // シングルモード用の既存のロジック
-  const [resource] = useAtom(resourceAtom);
-
-  const playersToShow = gameMode === 'single' 
+  const playersToShow = gameMode === 'single'
     ? (showCurrentPlayer ? [currentPlayer] : [])
     : (showCurrentPlayer ? playerRanking : otherPlayers);
 
@@ -94,52 +95,57 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
 
   if (limitedPlayers.length === 0) {
     return (
-      <div className="text-center text-gray-500 text-sm py-4">
+      <div className="rounded-xl border border-cyan-400/30 bg-slate-950/60 py-6 text-center text-xs tracking-[0.4em] text-slate-400 shadow-[0_0_30px_rgba(56,189,248,0.25)]">
         {gameMode === 'single' ? 'シングルプレイモード' : '他のプレイヤーはいません'}
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-gray-800">
+        <h3 className="text-sm font-semibold tracking-[0.35em] text-cyan-200">
           {showCurrentPlayer ? 'プレイヤー' : '他のプレイヤー'}
         </h3>
-        <span className="text-xs text-gray-500">
+        <span className="text-[10px] font-semibold tracking-[0.3em] text-slate-400">
           {gameMode === 'single' ? 'シングル' : `${playerRanking.length}人`}
         </span>
       </div>
-      
-      <div className="space-y-2 max-h-80 overflow-y-auto">
+
+      <div className="space-y-3 overflow-y-auto pr-1">
         {gameMode === 'single' && showCurrentPlayer ? (
-          <PlayerInfoCard 
-            // シングルモードでは表示リソースをresourceAtomに同期
-            player={{ ...currentPlayer, resource }} 
-            showDetails={true}
-          />
+          <div className="rounded-2xl border border-sky-400/40 bg-slate-950/80 p-3 shadow-[0_0_35px_rgba(56,189,248,0.3)]">
+            <PlayerInfoCard
+              player={{ ...currentPlayer, resource }}
+              showDetails={true}
+            />
+          </div>
         ) : (
           playerRanking.map((ranking) => {
-            const player = gameMode === 'single' 
-              ? currentPlayer 
+            const player = gameMode === 'single'
+              ? currentPlayer
               : [...otherPlayers, currentPlayer].find(p => p.id === ranking.playerId);
-            
+
             if (!player) return null;
-            
+
             return (
-              <PlayerInfoCard
+              <div
                 key={player.id}
-                player={player}
-                rank={ranking.rank}
-                showDetails={player.isCurrentPlayer}
-              />
+                className="rounded-2xl border border-slate-700/60 bg-slate-950/70 p-3 shadow-[0_0_25px_rgba(15,23,42,0.6)]"
+              >
+                <PlayerInfoCard
+                  player={player}
+                  rank={ranking.rank}
+                  showDetails={player.isCurrentPlayer}
+                />
+              </div>
             );
           })
         )}
       </div>
-      
+
       {maxPlayers && playersToShow.length > maxPlayers && (
-        <div className="text-center text-xs text-gray-500 pt-2 border-t border-gray-100">
+        <div className="border-t border-cyan-400/10 pt-2 text-center text-[10px] uppercase tracking-[0.3em] text-slate-400">
           他 {playersToShow.length - maxPlayers} 人
         </div>
       )}

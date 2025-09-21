@@ -41,28 +41,29 @@ export function Shop() {
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-lg font-bold text-cyan-700">ショップ</h2>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">ショップ</h2>
         <Button
           variant="primary"
           size="sm"
+          className="border border-cyan-300/40 bg-gradient-to-r from-cyan-500/60 to-sky-500/60 text-xs uppercase tracking-[0.3em] text-white shadow-[0_0_30px_rgba(56,189,248,0.35)] hover:from-cyan-400/70 hover:to-sky-400/70"
           onClick={handleReroll}
           disabled={resource < GAME_CONFIG.REROLL_COST}
         >
           リロール ({GAME_CONFIG.REROLL_COST})
         </Button>
       </div>
-      <div className="flex flex-wrap gap-4 justify-center">
+      <div className="flex flex-wrap justify-center gap-4">
         {shop.map((card, index) => (
           <TechCard
             key={`${card.id}-${index}`}
             card={card}
             techLevel={techLevels[card.id]}
             onClick={() => handleBuyCard(index)}
-            className={
-              resource < card.cost ? "opacity-50 cursor-not-allowed" : ""
-            }
+            className={`shadow-[0_0_25px_rgba(56,189,248,0.25)] ${
+              resource < card.cost ? 'cursor-not-allowed opacity-40' : ''
+            }`}
           />
         ))}
       </div>

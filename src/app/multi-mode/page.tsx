@@ -309,7 +309,11 @@ export default function MultiModePage() {
           header={
             <div className="flex items-center justify-between w-full">
               <GameStatus isMultiMode={true} />
-              <Button variant="secondary" onClick={handleBackToHome}>
+              <Button
+                variant="secondary"
+                className="border border-slate-700/60 bg-slate-900/70 text-xs uppercase tracking-[0.35em] text-slate-300 hover:border-cyan-300/40 hover:text-cyan-100"
+                onClick={handleBackToHome}
+              >
                 ホームに戻る
               </Button>
             </div>
@@ -341,7 +345,11 @@ export default function MultiModePage() {
           header={
             <div className="flex items-center justify-between w-full">
               <GameStatus isMultiMode={true} />
-              <Button variant="secondary" onClick={handleBackToHome}>
+              <Button
+                variant="secondary"
+                className="border border-slate-700/60 bg-slate-900/70 text-xs uppercase tracking-[0.35em] text-slate-300 hover:border-cyan-300/40 hover:text-cyan-100"
+                onClick={handleBackToHome}
+              >
                 ホームに戻る
               </Button>
             </div>
@@ -359,7 +367,11 @@ export default function MultiModePage() {
           header={
             <div className="flex items-center justify-between w-full">
               <GameStatus isMultiMode={true} />
-              <Button variant="secondary" onClick={handleBackToHome}>
+              <Button
+                variant="secondary"
+                className="border border-slate-700/60 bg-slate-900/70 text-xs uppercase tracking-[0.35em] text-slate-300 hover:border-cyan-300/40 hover:text-cyan-100"
+                onClick={handleBackToHome}
+              >
                 ホームに戻る
               </Button>
             </div>
@@ -377,7 +389,11 @@ export default function MultiModePage() {
           header={
             <div className="flex items-center justify-between w-full">
               <GameStatus isMultiMode={true} />
-              <Button variant="secondary" onClick={handleBackToHome}>
+              <Button
+                variant="secondary"
+                className="border border-slate-700/60 bg-slate-900/70 text-xs uppercase tracking-[0.35em] text-slate-300 hover:border-cyan-300/40 hover:text-cyan-100"
+                onClick={handleBackToHome}
+              >
                 ホームに戻る
               </Button>
             </div>
@@ -404,10 +420,21 @@ export default function MultiModePage() {
       
     default:
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-gray-600">不明なフェーズです: {multiState.currentPhase}</p>
-            <Button variant="secondary" onClick={handleBackToHome} className="mt-4">
+        <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: "url(/title_image.png)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "brightness(0.3)",
+            }}
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-slate-950/85 to-black/95" aria-hidden="true" />
+          <div className="relative z-10 rounded-3xl border border-cyan-400/30 bg-slate-950/70 p-8 text-center text-slate-200 shadow-[0_0_50px_rgba(56,189,248,0.3)]">
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-300">不明なフェーズです: {multiState.currentPhase}</p>
+            <Button variant="secondary" onClick={handleBackToHome} className="mt-6 border border-slate-700/60 bg-slate-900/70 text-xs uppercase tracking-[0.35em] text-slate-300 hover:border-cyan-300/40 hover:text-cyan-100">
               ホームに戻る
             </Button>
           </div>

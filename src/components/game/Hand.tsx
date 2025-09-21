@@ -23,9 +23,9 @@ export function Hand() {
   };
 
   return (
-    <div>
-      <h2 className="text-lg font-bold mb-3 text-orange-700">手札</h2>
-      <div className="flex flex-wrap gap-2 justify-center">
+    <div className="space-y-4">
+      <h2 className="text-sm font-semibold uppercase tracking-[0.35em] text-orange-200">手札</h2>
+      <div className="flex flex-wrap justify-center gap-3">
         {hand.map((card, index) => (
           <TechCard
             key={`${card.id}-${index}`}
@@ -33,13 +33,18 @@ export function Hand() {
             techLevel={techLevels[card.id]}
             badge="手札"
             onClick={() => handleCardClick(index)}
-            className={
+            className={`shadow-[0_0_25px_rgba(249,115,22,0.3)] ${
               selectedCards.length >= GAME_CONFIG.MAX_SELECTED_CARDS
-                ? "opacity-50 cursor-not-allowed"
-                : ""
-            }
+                ? 'cursor-not-allowed opacity-30'
+                : ''
+            }`}
           />
         ))}
+        {hand.length === 0 && (
+          <span className="text-xs tracking-[0.3em] text-slate-400">
+            手札にカードがありません
+          </span>
+        )}
       </div>
     </div>
   );

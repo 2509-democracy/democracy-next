@@ -6,13 +6,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
 }
 
-export function Button({ 
-  variant = 'primary', 
-  size = 'md', 
-  children, 
-  className = '', 
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  children,
+  className = '',
   disabled,
-  ...props 
+  type = 'button',
+  ...props
 }: ButtonProps) {
   const baseClasses = 'font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
   
@@ -34,7 +35,7 @@ export function Button({
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       disabled={disabled}
       // 明示的にbuttonタイプを指定（フォーム内での誤送信防止）
-      type={(props as any).type ?? 'button'}
+      type={type}
       {...props}
     >
       {children}
