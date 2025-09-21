@@ -37,6 +37,9 @@ import {
   selectedCardsAtom,
   techLevelsAtom,
   turnAtom,
+  multiGameStateAtom,
+  setPhaseAtom,
+  updateTimerFromTimestampAtom,
 } from '@/store/game';
 import { tutorialModalAtom } from "@/store/ui";
 import { useAtom } from "jotai";
@@ -55,14 +58,14 @@ export default function SingleModePage() {
   const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
   const [, initializeMultiGame] = useAtom(initializeMultiGameAtom);
   const [, freeRerollShop] = useAtom(freeRerollShopAtom);
+  const [multiState, setMultiState] = useAtom(multiGameStateAtom);
+  const [, setPhase] = useAtom(setPhaseAtom);
+  const [, updateTimerFromTimestamp] = useAtom(updateTimerFromTimestampAtom);
   
   const [tutorialOpen, setTutorialOpen] = useAtom(tutorialModalAtom);
 
   const [showEndModal, setShowEndModal] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const [gamePhase, setGamePhase] = useState<
-    "preparation" | "ai_evaluation" | "round_result" | "final_ranking"
-  >("preparation");
 
   // シングルモードを「一人用マルチモード」として初期化
   useEffect(() => {
@@ -85,10 +88,38 @@ export default function SingleModePage() {
 
     // initializeMultiGameを使用して適切に初期化
     initializeMultiGame([singlePlayer], "single-player");
+    
+    // preparationフェーズに設定
+    setPhase('preparation', 'ゲーム開始 - アイデアを考えよう！');
 
     // 初回のみチュートリアル表示
     setTutorialOpen(true);
-  }, [initializeGame, initializeShop, initializeMultiGame]);
+  }, [initializeGame, initializeShop, initializeMultiGame, setPhase]);
+
+  // タイムスタンプベースタイマー管理
+  useEffect(() => {
+    if (multiState.isTimerActive) {
+      const interval = setInterval(() => {
+        const result = updateTimerFromTimestamp();
+        
+        if (result?.isExpired) {
+          // フェーズ期限切れ時の自動遷移
+          if (multiState.currentPhase === 'preparation') {
+            handleStartHackathon();
+          } else if (multiState.currentPhase === 'round_result') {
+            const nextTurn = turn + 1;
+            if (isGameEnded(nextTurn)) {
+              handleFinishGame();
+            } else {
+              handleNextRound();
+            }
+          }
+        }
+      }, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [multiState.isTimerActive, multiState.currentPhase, multiState.currentPhaseStartTime, updateTimerFromTimestamp, turn]);
 
   const handleStartHackathon = async () => {
     if (!canStartHackathon(selectedCards, idea) || !gameState.hackathonInfo) {
@@ -96,7 +127,7 @@ export default function SingleModePage() {
     }
 
     setIsLoading(true);
-    setGamePhase("ai_evaluation");
+    setPhase('ai_evaluation', 'AI評価中...');
 
     try {
       // AI評価を実行
@@ -127,27 +158,10 @@ export default function SingleModePage() {
       setIdea("");
 
       // 結果表示フェーズに移行
-      setGamePhase("round_result");
-
-      // 3秒後に次の判定
-      setTimeout(() => {
-        const nextTurn = turn + 1;
-        setTurn(nextTurn);
-
-        if (isGameEnded(nextTurn)) {
-          // ゲーム終了
-          const finalBonus = calculateFinalBonus(newTechLevels);
-          const totalFinalScore = newScore + finalBonus;
-          setFinalScore(totalFinalScore);
-          setGamePhase("final_ranking");
-        } else {
-          // 次のラウンドへ
-          setGamePhase("preparation");
-        }
-      }, 3000);
+      setPhase('round_result', '結果発表！');
     } catch (error) {
       console.error("Hackathon execution error:", error);
-      setGamePhase("preparation"); // エラー時は準備フェーズに戻る
+      setPhase('preparation', 'ゲーム開始 - アイデアを考えよう！'); // エラー時は準備フェーズに戻る
     } finally {
       setIsLoading(false);
     }
@@ -156,17 +170,31 @@ export default function SingleModePage() {
   const handleRestart = () => {
     setShowEndModal(false);
     setFinalScore(0);
-    setGamePhase("preparation");
+    setPhase('preparation', 'ゲーム開始 - アイデアを考えよう！');
   };
 
   const handleNextRound = () => {
-    // 新しいラウンド開始時に無料リロール実行
-    freeRerollShop();
-    setGamePhase('preparation');
+    const nextTurn = turn + 1;
+    setTurn(nextTurn);
+    
+    if (isGameEnded(nextTurn)) {
+      // ゲーム終了
+      const finalBonus = calculateFinalBonus(techLevels);
+      const totalFinalScore = score + finalBonus;
+      setFinalScore(totalFinalScore);
+      setPhase('final_ranking', '最終結果発表');
+    } else {
+      // 新しいラウンド開始時に無料リロール実行
+      freeRerollShop();
+      setPhase('preparation', `第${nextTurn}ラウンド - 準備フェーズ`);
+    }
   };
 
   const handleFinishGame = () => {
-    setGamePhase("final_ranking");
+    const finalBonus = calculateFinalBonus(techLevels);
+    const totalFinalScore = score + finalBonus;
+    setFinalScore(totalFinalScore);
+    setPhase('final_ranking', '最終結果発表');
   };
 
   const handleBackToHome = () => {
@@ -174,15 +202,15 @@ export default function SingleModePage() {
   };
 
   // フェーズベースのルーティング
-  switch (gamePhase) {
-    case "ai_evaluation":
+  switch (multiState.currentPhase) {
+    case 'ai_evaluation':
       return (
         <CollapsibleGameLayout
           header={<GameStatus isMultiMode={false} />}
           leftPanel={<ScoreSummary isMultiMode={false} />}
           centerPanel={
             <AIEvaluationScreen
-              onEvaluationComplete={() => setGamePhase("round_result")}
+              onEvaluationComplete={() => setPhase('round_result', '結果発表！')}
             />
           }
           rightPanel={<PlayerList isMultiMode={false} />}
@@ -190,7 +218,7 @@ export default function SingleModePage() {
         />
       );
 
-    case "round_result":
+    case 'round_result':
       return (
         <CollapsibleGameLayout
           header={<GameStatus isMultiMode={false} />}
@@ -206,7 +234,7 @@ export default function SingleModePage() {
         />
       );
 
-    case "final_ranking":
+    case 'final_ranking':
       return (
         <FinalRanking
           onRestart={handleRestart}
@@ -214,7 +242,7 @@ export default function SingleModePage() {
         />  
       );
 
-    case "preparation":
+    case 'preparation':
     default:
       return (
         <CollapsibleGameLayout

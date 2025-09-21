@@ -258,9 +258,10 @@ export const otherPlayersAtom = atom((get) => {
 export const initializeMultiGameAtom = atom(
   null,
   (get, set, players: MultiPlayer[], playerId: string) => {
+    const mode = players.length === 1 ? 'single' : 'multi';
     set(multiGameStateAtom, {
       ...initialMultiGameState,
-      mode: 'multi',
+      mode,
       players,
       currentPlayerId: playerId,
       gameStarted: false, // matchingフェーズではまだゲーム開始していない
