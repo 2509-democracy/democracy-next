@@ -288,6 +288,36 @@ export const initializeMultiGameAtom = atom(
   }
 );
 
+// シングルプレイモード初期化action
+export const initializeSingleGameAtom = atom(
+  null,
+  (get, set, players: MultiPlayer[], playerId: string) => {
+    set(multiGameStateAtom, {
+      ...initialMultiGameState,
+      mode: 'single',
+      players,
+      currentPlayerId: playerId,
+      gameStarted: true, // シングルプレイでは即座にゲーム開始
+      currentPhase: 'preparation',
+      phaseMessage: '準備フェーズ - アイデアを考えよう！',
+    });
+
+    // 現在のプレイヤーの状態をゲーム状態に反映
+    const currentPlayer = players.find(p => p.id === playerId);
+    if (currentPlayer) {
+      set(gameStateAtom, {
+        ...get(gameStateAtom),
+        resource: currentPlayer.resource,
+        score: currentPlayer.score,
+        techLevels: currentPlayer.techLevels,
+        hand: currentPlayer.hand,
+        selectedCards: currentPlayer.selectedCards,
+      });
+      set(ideaAtom, currentPlayer.idea);
+    }
+  }
+);
+
 // タイマー関連
 export const startTimerAtom = atom(
   null,

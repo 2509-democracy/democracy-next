@@ -30,17 +30,19 @@ import {
   gameStateAtom,
   ideaAtom,
   initializeGameAtom,
-  initializeMultiGameAtom,
+  initializeSingleGameAtom,
   isLoadingAtom,
+  multiGameStateAtom,
   resourceAtom,
   scoreAtom,
   selectedCardsAtom,
   techLevelsAtom,
   turnAtom,
+  updateTimerFromTimestampAtom,
 } from '@/store/game';
 import { tutorialModalAtom } from "@/store/ui";
 import { useAtom } from "jotai";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function SingleModePage() {
   const [gameState] = useAtom(gameStateAtom);
@@ -53,8 +55,10 @@ export default function SingleModePage() {
   const [techLevels, setTechLevels] = useAtom(techLevelsAtom);
   const [resource, setResource] = useAtom(resourceAtom);
   const [isLoading, setIsLoading] = useAtom(isLoadingAtom);
-  const [, initializeMultiGame] = useAtom(initializeMultiGameAtom);
+  const [, initializeSingleGame] = useAtom(initializeSingleGameAtom);
   const [, freeRerollShop] = useAtom(freeRerollShopAtom);
+  const [multiGameState, setMultiGameState] = useAtom(multiGameStateAtom);
+  const [, updateTimerFromTimestamp] = useAtom(updateTimerFromTimestampAtom);
   
   const [tutorialOpen, setTutorialOpen] = useAtom(tutorialModalAtom);
 
@@ -83,12 +87,13 @@ export default function SingleModePage() {
       isConnected: true,
     };
 
-    // initializeMultiGameを使用して適切に初期化
-    initializeMultiGame([singlePlayer], "single-player");
+    // initializeSingleGameを使用して適切に初期化
+    initializeSingleGame([singlePlayer], "single-player");
 
     // 初回のみチュートリアル表示
     setTutorialOpen(true);
-  }, [initializeGame, initializeShop, initializeMultiGame]);
+  }, [initializeGame, initializeShop, initializeSingleGame]);
+
 
   const handleStartHackathon = async () => {
     if (!canStartHackathon(selectedCards, idea) || !gameState.hackathonInfo) {
@@ -125,29 +130,30 @@ export default function SingleModePage() {
       const newTechLevels = upgradeTechLevels(techLevels, selectedCards);
       setTechLevels(newTechLevels);
 
+      // AI評価結果をマルチゲーム状態に保存
+      setMultiGameState((prevState) => ({
+        ...prevState,
+        currentRoundAIEvaluations: {
+          ...prevState.currentRoundAIEvaluations,
+          "single-player": result, // シングルプレイヤーのIDで保存
+        },
+      }));
+
       // カードリセット
       setSelectedCards([]);
       setIdea("");
 
-      // 結果表示フェーズに移行
+      // 結果表示フェーズに移行し、タイマーを開始
       setGamePhase("round_result");
-
-      // 3秒後に次の判定
-      setTimeout(() => {
-        const nextTurn = turn + 1;
-        setTurn(nextTurn);
-
-        if (isGameEnded(nextTurn)) {
-          // ゲーム終了
-          const finalBonus = calculateFinalBonus(newTechLevels);
-          const totalFinalScore = newScore + finalBonus;
-          setFinalScore(totalFinalScore);
-          setGamePhase("final_ranking");
-        } else {
-          // 次のラウンドへ
-          setGamePhase("preparation");
-        }
-      }, 3000);
+      
+      // マルチゲーム状態のフェーズをround_resultに設定（タイマーが自動的に開始される）
+      setMultiGameState((prevState) => ({
+        ...prevState,
+        currentPhase: 'round_result',
+        currentPhaseStartTime: new Date(),
+        timeLeft: 20, // round_resultフェーズは20秒
+        isTimerActive: true,
+      }));
     } catch (error) {
       console.error("Hackathon execution error:", error);
       setGamePhase("preparation"); // エラー時は準備フェーズに戻る
@@ -162,11 +168,51 @@ export default function SingleModePage() {
     setGamePhase("preparation");
   };
 
-  const handleNextRound = () => {
+  const handleNextRound = useCallback(() => {
+    // ターン数を更新
+    const nextTurn = turn + 1;
+    setTurn(nextTurn);
+    
+    // マルチゲーム状態のラウンド数も更新
+    setMultiGameState((prevState) => ({
+      ...prevState,
+      currentRound: nextTurn,
+      currentRoundAIEvaluations: {}, // 新しいラウンドでAI評価結果をリセット
+    }));
+    
     // 新しいラウンド開始時に無料リロール実行
     freeRerollShop();
     setGamePhase('preparation');
-  };
+  }, [turn, setTurn, setMultiGameState, freeRerollShop, setGamePhase]);
+
+  // タイマーの監視と自動進行
+  useEffect(() => {
+    if (!multiGameState.isTimerActive || gamePhase !== 'round_result') return;
+
+    const interval = setInterval(() => {
+      const timerResult = updateTimerFromTimestamp();
+      
+      if (timerResult?.isExpired) {
+        // タイマー期限切れ時の自動進行
+        const nextTurn = turn + 1;
+        
+        if (isGameEnded(nextTurn)) {
+          // ゲーム終了
+          const finalBonus = calculateFinalBonus(techLevels);
+          const totalFinalScore = score + finalBonus;
+          setFinalScore(totalFinalScore);
+          setGamePhase("final_ranking");
+        } else {
+          // 次のラウンドへ
+          handleNextRound();
+        }
+        
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [multiGameState.isTimerActive, gamePhase, turn, techLevels, score, updateTimerFromTimestamp, handleNextRound]);
 
   const handleFinishGame = () => {
     setGamePhase("final_ranking");
