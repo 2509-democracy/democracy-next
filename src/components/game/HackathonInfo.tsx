@@ -20,7 +20,7 @@ export function HackathonInfo() {
           <span className="font-medium text-gray-600">方向性:</span>
           <span className="font-bold text-gray-900 ml-2">{hackathonInfo.direction}</span>
         </div>
-      </div>
+      </div>  
     </div>
   );
 }
