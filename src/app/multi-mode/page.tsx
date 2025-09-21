@@ -13,12 +13,10 @@ import {
   resourceAtom,
   multiGameStateAtom,
   initializeMultiGameAtom,
-  startTimerAtom,
-  stopTimerAtom,
-  updateTimerAtom,
   setPhaseAtom,
   freeRerollShopAtom,
   MultiPlayer,
+  updateTimerFromTimestampAtom,
 } from '@/store/game';
 import { initializeShopAtom } from '@/features/shop';
 import { CollapsibleGameLayout } from '@/components/layout/CollapsibleGameLayout';
@@ -77,11 +75,9 @@ export default function MultiModePage() {
   
   const [multiState, setMultiState] = useAtom(multiGameStateAtom);
   const [, initializeMultiGame] = useAtom(initializeMultiGameAtom);
-  const [, startTimer] = useAtom(startTimerAtom);
-  const [, stopTimer] = useAtom(stopTimerAtom);
-  const [, updateTimer] = useAtom(updateTimerAtom);
   const [, setPhase] = useAtom(setPhaseAtom);
   const [, freeRerollShop] = useAtom(freeRerollShopAtom);
+  const [, updateTimerFromTimestamp] = useAtom(updateTimerFromTimestampAtom);
   
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -121,18 +117,16 @@ export default function MultiModePage() {
       
       setIsInitialized(true);
     }
-  }, [isInitialized, initializeGame, initializeShop, initializeMultiGame, startTimer]);
+  }, [isInitialized, initializeGame, initializeShop, initializeMultiGame]);
 
-  // タイマー管理
+  // タイムスタンプベースタイマー管理
   useEffect(() => {
-    if (multiState.isTimerActive && multiState.timeLeft > 0) {
+    if (multiState.isTimerActive) {
       const interval = setInterval(() => {
-        const newTime = multiState.timeLeft - 1;
-        updateTimer(newTime);
+        const result = updateTimerFromTimestamp();
         
-        if (newTime <= 0) {
-          stopTimer();
-          
+        if (result?.isExpired) {
+          // フェーズ期限切れ時の自動遷移
           if (multiState.currentPhase === 'preparation') {
             // 準備時間終了 → 自動でハッカソン実行（強制実行）
             handleStartHackathon(true);
@@ -151,7 +145,7 @@ export default function MultiModePage() {
       return () => clearInterval(interval);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [multiState.isTimerActive, multiState.timeLeft, multiState.currentPhase, updateTimer, stopTimer]); // handleStartHackathon is hoisted function declaration
+  }, [multiState.isTimerActive, multiState.currentPhase, multiState.currentPhaseStartTime, updateTimerFromTimestamp]); // handleStartHackathon is hoisted function declaration
 
   // 関数宣言でhoistingを利用
   async function handleStartHackathon(forceStart = false) {
@@ -222,8 +216,7 @@ export default function MultiModePage() {
       setSelectedCards([]);
       setIdea('');
 
-      // 結果表示（60秒のタイマー開始）
-      startTimer(60); // 60秒タイマー開始
+      // 結果表示フェーズに移行（タイマーは自動設定される）
 
     } catch (error) {
       console.error('Hackathon execution error:', error);
@@ -242,8 +235,7 @@ export default function MultiModePage() {
       gameStarted: true,
     }));
     setPhase('preparation', '第1ラウンド - 準備フェーズ');
-    console.log('Starting initial timer for round 1'); // デバッグログ
-    startTimer(60);
+    console.log('Starting initial phase for round 1'); // デバッグログ
   };
   
   const handleProceedToEvaluation = () => {
@@ -265,8 +257,7 @@ export default function MultiModePage() {
       // 新しいラウンド開始時に無料リロール実行
       freeRerollShop();
       setPhase('preparation', `第${nextRound}ラウンド - 準備フェーズ`);
-      console.log('Starting timer for round', nextRound); // デバッグログ
-      startTimer(60); // 準備フェーズのタイマー開始
+      console.log('Starting phase for round', nextRound); // デバッグログ
     }
   };
   
@@ -286,7 +277,6 @@ export default function MultiModePage() {
   };
 
   const handleBackToHome = () => {
-    stopTimer();
     router.push('/');
   };
 

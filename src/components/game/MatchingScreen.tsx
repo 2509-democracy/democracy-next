@@ -108,11 +108,8 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
           {/* ヘッダー */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              ハッカソン・デベロッパー
-            </h1>
-            <p className="text-gray-600">
               マルチプレイヤーモード
-            </p>
+            </h1>
           </div>
           
           {/* 接続状態 */}
@@ -224,12 +221,6 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
             >
               ホームに戻る
             </Button>
-          </div>
-          
-          {/* 注意事項 */}
-          <div className="mt-6 text-xs text-gray-500 text-center">
-            <p>マッチング後は途中退出できません</p>
-            <p>安定したインターネット接続を確認してください</p>
           </div>
         </div>
       </div>
