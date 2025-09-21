@@ -27,6 +27,7 @@ export function SelectedCards() {
             techLevel={techLevels[card.id]}
             badge="選択済み"
             onClick={() => handleCardClick(index)}
+            isSelected
           />
         ))}
       </div>

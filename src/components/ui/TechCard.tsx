@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { TechCard as TechCardType } from "@/features/card-pool";
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -16,6 +19,7 @@ interface TechCardProps {
   badge?: string;
   onClick?: () => void;
   className?: string;
+  isSelected?: boolean;
 }
 
 export function TechCard({
@@ -24,15 +28,49 @@ export function TechCard({
   badge = `${card.cost} リソース`,
   onClick,
   className = "",
+  isSelected = false,
 }: TechCardProps) {
+  const [isClickAnimating, setIsClickAnimating] = useState(false);
+
+  useEffect(() => {
+    if (!isClickAnimating) {
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      setIsClickAnimating(false);
+    }, 600);
+
+    return () => clearTimeout(timeout);
+  }, [isClickAnimating]);
+
+  const handleClick = () => {
+    setIsClickAnimating(true);
+    onClick?.();
+  };
+
   return (
     <div
-      className={`relative bg-white border-2 border-gray-300 p-1.5 rounded-lg w-28 cursor-pointer transition-all duration-200 hover:scale-105 hover:border-blue-400 group ${className}`}
-      onClick={onClick}
+      className={`relative bg-white border-2 border-gray-300 p-1.5 rounded-lg w-28 cursor-pointer transition-all duration-200 hover:scale-105 hover:border-blue-400 group overflow-hidden ${
+        isSelected
+          ? "border-blue-400 shadow-[0_16px_35px_rgba(59,130,246,0.35)] ring-2 ring-blue-200/80 animate-selected-glow"
+          : ""
+      } ${className}`}
+      onClick={handleClick}
     >
+      <div className="pointer-events-none absolute inset-0">
+        <div
+          className={`absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-300/40 ${
+            isClickAnimating ? "animate-ripple" : "opacity-0"
+          }`}
+        />
+      </div>
       <div className="absolute inset-0 opacity-0 group-active:opacity-100 pointer-events-none">
         <div className="absolute inset-0 animate-sparkle bg-gradient-to-r from-transparent via-white to-transparent" />
       </div>
+      {isSelected && (
+        <div className="pointer-events-none absolute inset-0 rounded-lg border border-blue-200/80" />
+      )}
       {/* カテゴリバッジをリソースバッジと同じ形状・配置に変更 */}
       <div
         className={`absolute -top-1 -left-1 text-[10px] px-1 py-0.5 rounded-full text-white ${
