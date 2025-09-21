@@ -4,6 +4,40 @@ import { generateCardPool, getShuffledPool } from '@/features/card-pool';
 import { THEMES, DIRECTIONS, GAME_CONFIG } from '@/const/game';
 import { TechCard } from '@/features/card-pool';
 
+// フェーズ持続時間の定数（秒単位）
+export const PHASE_DURATIONS: Record<MultiGamePhase, number> = {
+  waiting: 0,            // 無制限
+  matching: 0,           // 無制限
+  preparation: 60,       // 60秒
+  submission_review: 10, // 10秒（短時間表示）
+  ai_evaluation: 0,      // AI処理時間による（可変）
+  round_result: 60,      // 60秒
+  final_ranking: 0,      // 無制限
+};
+
+// タイムスタンプベースのタイマー計算関数
+export function calculateTimeLeft(phaseStartTime: Date, phase: MultiGamePhase): number {
+  const duration = PHASE_DURATIONS[phase];
+  if (duration === 0) return 0; // 無制限の場合
+  
+  const elapsed = (Date.now() - phaseStartTime.getTime()) / 1000;
+  return Math.max(0, duration - elapsed);
+}
+
+// 特定フェーズの終了時刻を計算
+export function calculatePhaseEndTime(phaseStartTime: Date, phase: MultiGamePhase): Date {
+  const duration = PHASE_DURATIONS[phase];
+  return new Date(phaseStartTime.getTime() + (duration * 1000));
+}
+
+// 現在の時刻がフェーズ終了時刻を過ぎているかチェック
+export function isPhaseExpired(phaseStartTime: Date, phase: MultiGamePhase): boolean {
+  const duration = PHASE_DURATIONS[phase];
+  if (duration === 0) return false; // 無制限の場合は期限切れなし
+  
+  return Date.now() > (phaseStartTime.getTime() + (duration * 1000));
+}
+
 // 初期状態
 const initialGameState: GameState = {
   turn: 1,
@@ -183,6 +217,9 @@ export interface MultiGameState {
   submissions: PlayerSubmission[];
   roomId?: string; // リアルタイム通信用のルームID
   isHost?: boolean; // ホストプレイヤーフラグ
+  // タイムスタンプベースタイマー用フィールド
+  gameStartTime?: Date; // ゲーム開始時刻
+  currentPhaseStartTime?: Date; // 現在フェーズの開始時刻
 }
 
 // マルチゲーム初期状態
@@ -199,6 +236,8 @@ const initialMultiGameState: MultiGameState = {
   maxRounds: GAME_CONFIG.MAX_TURNS,
   roundResults: [],
   submissions: [],
+  gameStartTime: undefined,
+  currentPhaseStartTime: undefined,
 };
 
 // マルチゲーム用atom
@@ -280,11 +319,12 @@ export const updateTimerAtom = atom(
   }
 );
 
-// フェーズ遷移アクション
+// フェーズ遷移アクション（タイムスタンプ付き）
 export const setPhaseAtom = atom(
   null,
   (get, set, phase: MultiGamePhase, message?: string) => {
     const multiState = get(multiGameStateAtom);
+    const now = new Date();
     const phaseMessages: Record<MultiGamePhase, string> = {
       waiting: 'ゲームの準備をしています...',
       matching: 'プレイヤーを待っています...',
@@ -299,6 +339,44 @@ export const setPhaseAtom = atom(
       ...multiState,
       currentPhase: phase,
       phaseMessage: message || phaseMessages[phase],
+      currentPhaseStartTime: now,
+      // ゲーム開始時刻を記録（初回のpreparationフェーズで）
+      gameStartTime: (phase === 'preparation' && !multiState.gameStartTime) ? now : multiState.gameStartTime,
+      // タイマーのあるフェーズではタイマーを有効化
+      isTimerActive: PHASE_DURATIONS[phase] > 0,
+      timeLeft: PHASE_DURATIONS[phase],
+    });
+  }
+);
+
+// タイムスタンプベースでタイマーを更新
+export const updateTimerFromTimestampAtom = atom(
+  null,
+  (get, set) => {
+    const multiState = get(multiGameStateAtom);
+    if (!multiState.currentPhaseStartTime) return;
+    
+    const timeLeft = calculateTimeLeft(multiState.currentPhaseStartTime, multiState.currentPhase);
+    const isExpired = isPhaseExpired(multiState.currentPhaseStartTime, multiState.currentPhase);
+    
+    set(multiGameStateAtom, {
+      ...multiState,
+      timeLeft: Math.max(0, timeLeft),
+      isTimerActive: timeLeft > 0 && !isExpired,
+    });
+    
+    return { timeLeft, isExpired };
+  }
+);
+
+// ゲーム開始時刻設定
+export const setGameStartTimeAtom = atom(
+  null,
+  (get, set, startTime: Date) => {
+    const multiState = get(multiGameStateAtom);
+    set(multiGameStateAtom, {
+      ...multiState,
+      gameStartTime: startTime,
     });
   }
 );
