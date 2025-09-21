@@ -100,11 +100,14 @@ export default function SingleModePage() {
 
     try {
       // AI評価を実行
+      const techNames = selectedCards.map((c) => c.name);
+      const techLevelsSelected = Object.fromEntries(selectedCards.map(card => [card.name, card.level]));
       const result = await evaluateHackathon({
         theme: gameState.hackathonInfo.theme,
         direction: gameState.hackathonInfo.direction,
         idea,
-        techNames: selectedCards.map((c) => c.name),
+        techNames,
+        techLevels: techLevelsSelected,
       });
 
       // 技術レベルボーナス計算（場に出したカードのみ）

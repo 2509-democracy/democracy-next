@@ -167,11 +167,14 @@ export default function MultiModePage() {
       setPhase('ai_evaluation', 'AI評価中...');
 
       // AI評価を実行（モック版）
+      const techNames = selectedCards.length > 0 ? selectedCards.map(c => c.name) : ['技術なし'];
+      const techLevelsSelected = Object.fromEntries(selectedCards.map(card => [card.name, card.level]));
       const result = await evaluateHackathon({
         theme: gameState.hackathonInfo.theme,
         direction: gameState.hackathonInfo.direction,
         idea: idea.trim() || 'アイデア未入力',
-        techNames: selectedCards.length > 0 ? selectedCards.map(c => c.name) : ['技術なし'],
+        techNames,
+        techLevels: techLevelsSelected,
       });
 
       // 技術レベルボーナス計算（場に出したカードのみ）
