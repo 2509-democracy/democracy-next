@@ -44,8 +44,6 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
 
     return () => {
       isCancelled = true;
-      // コンポーネントアンマウント時に切断
-      disconnect();
     };
   }, []); // 空の依存配列 - 初回マウント時のみ実行
 
