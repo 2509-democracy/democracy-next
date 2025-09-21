@@ -13,7 +13,7 @@ function renderEmojis(count: number, emoji: string) {
 interface TechCardProps {
   card: TechCardType;
   techLevel?: number;
-  badge?: string;
+  badge?: string | number;
   onClick?: () => void;
   className?: string;
 }
@@ -21,7 +21,7 @@ interface TechCardProps {
 export function TechCard({
   card,
   techLevel,
-  badge = `${card.cost} リソース`,
+  badge = card.cost,
   onClick,
   className = "",
 }: TechCardProps) {
@@ -47,7 +47,7 @@ export function TechCard({
         <img
           src={card.icon}
           alt={card.name + " icon"}
-          className="mx-auto mt-0 mb-0 w-8 h-8 object-contain"
+          className="mx-auto mt-0 mb-0 h-8 w-8 object-contain drop-shadow-[0_6px_14px_rgba(12,74,110,0.55)]"
           style={{ display: "block" }}
         />
       )}
@@ -74,7 +74,7 @@ export function TechCard({
         </table>
       </div>
       {/* リソースバッジ（右上） */}
-      <div className="absolute -top-2 -right-2 rounded-full border border-amber-300/40 bg-amber-500/30 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-amber-100">
+      <div className="absolute -top-2 -right-2 rounded-full border border-amber-300/40 bg-amber-500/30 px-2 py-1 text-[11px] font-semibold tracking-[0.25em] text-amber-100">
         {badge}
       </div>
     </div>

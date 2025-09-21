@@ -26,14 +26,16 @@ export function CollapsibleGameLayout({
     gridTemplateColumns: `${paneState.left ? "240px" : "48px"} 1fr ${
       paneState.right ? "300px" : "48px"
     }`,
-    gridTemplateRows: `72px 1fr ${paneState.bottom ? "320px" : "52px"}`,
+    gridTemplateRows: `minmax(60px, 12vh) 1fr ${
+      paneState.bottom ? "minmax(220px, 30vh)" : "48px"
+    }`,
   };
 
   const panelBaseClass =
-    "relative border border-cyan-400/30 bg-slate-950/70 shadow-[0_0_55px_rgba(15,118,110,0.35)] transition-all duration-300 ease-in-out overflow-hidden backdrop-blur-xl";
+    "relative min-h-0 border border-cyan-400/30 bg-slate-950/70 shadow-[0_0_55px_rgba(15,118,110,0.35)] transition-all duration-300 ease-in-out overflow-hidden backdrop-blur-xl";
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-slate-100">
+    <div className="relative min-h-[100dvh] overflow-hidden text-slate-100">
       <div
         className="absolute inset-0"
         style={{
@@ -49,9 +51,9 @@ export function CollapsibleGameLayout({
         aria-hidden="true"
       />
 
-      <div className="relative z-10 flex min-h-screen items-stretch justify-center px-4 py-6 md:px-10 md:py-10">
+      <div className="relative z-10 flex h-[100dvh] min-h-0 w-full items-stretch justify-center px-3 py-4 md:px-8 md:py-8">
         <div
-          className="grid h-full w-full max-w-[1600px] gap-4 overflow-hidden rounded-3xl border border-cyan-400/30 bg-slate-950/60 shadow-[0_40px_120px_rgba(12,74,110,0.55)] transition-all duration-500 ease-in-out"
+          className="grid h-full min-h-0 w-full max-w-[1600px] gap-4 overflow-hidden rounded-3xl border border-cyan-400/30 bg-slate-950/60 shadow-[0_40px_120px_rgba(12,74,110,0.55)] transition-all duration-500 ease-in-out"
           style={gridStyles}
         >
           {/* 上部ヘッダー - 全幅に跨る */}
@@ -121,7 +123,7 @@ export function CollapsibleGameLayout({
             </div>
 
             <div
-              className={`h-full transition-opacity duration-300 ${
+              className={`h-full overflow-y-auto transition-opacity duration-300 ${
                 paneState.bottom ? "opacity-100" : "opacity-70"
               }`}
             >
