@@ -35,24 +35,30 @@ export async function evaluateHackathon({
   // 各項目の採点ロジック
   const ideaLength = idea.trim().length;
   const techCount = techNames.length;
+  const response = await fetch("https://scoring-agents.naokimiura15.workers.dev/",({
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      idea,
+      techNames,
+      theme,
+      direction
+    }),
+  })
+  ).then((res) => res.json());
+  console.log(response)
   
   // 採点項目1: アイデアの独創性（20点満点）
-  const criteria1 = Math.min(Math.max(
-    10 + (ideaLength / 10) + Math.floor(Math.random() * 8), 
-    5
-  ), 20);
+  const criteria1 = response.breakdown.criteria1;
   
   // 採点項目2: 技術選定の適切性（20点満点）
-  const criteria2 = Math.min(Math.max(
-    8 + (techCount * 3) + Math.floor(Math.random() * 7), 
-    5
-  ), 20);
+  const criteria2 = response.breakdown.criteria2;
   
   // 採点項目3: テーマ適合性（20点満点）
-  const criteria3 = Math.min(Math.max(
-    12 + (direction.length > 0 ? 3 : 0) + Math.floor(Math.random() * 6), 
-    8
-  ), 20);
+  const criteria3 = response.breakdown.criteria3;
   
   // デモ評価点（30点満点）
   const demoScore = Math.min(Math.max(
@@ -66,7 +72,8 @@ export async function evaluateHackathon({
   const comment = COMMENT_TEMPLATES[Math.floor(Math.random() * COMMENT_TEMPLATES.length)];
   
   // ダミー画像URL生成
-  const generatedImageUrl = generateMockImageUrl(theme, idea);
+  const generatedImageUrl = response.generatedImageUrl;
+
 
   console.log(`モックAI評価: テーマ「${theme}」, アイデア「${idea.trim() || 'アイデア未入力'}」, 技術: ${techNames.join(', ')}, 総合スコア: ${Math.floor(totalScore)}`);
 
