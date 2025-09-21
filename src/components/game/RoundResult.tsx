@@ -3,6 +3,7 @@ import { multiGameStateAtom } from '@/store/game';
 import { Button } from '../ui/Button';
 import { TechCard } from '../ui/TechCard';
 import { TechCard as TechCardType } from '@/features/card-pool';
+import { DetailedAIEvaluationResponse } from '@/types/game';
 
 interface RoundResultProps {
   onNextRound: () => void;
@@ -16,7 +17,7 @@ interface PlayerResult {
   rank: number;
   idea: string;
   techCards: TechCardType[];
-  aiScore: number;
+  aiEvaluation: DetailedAIEvaluationResponse;
   totalScore: number;
 }
 
@@ -25,16 +26,31 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
   
   // プレイヤー結果を生成（実際のデータを使用）
   const playerResults: PlayerResult[] = multiGameState.players
-    .map(player => ({
-      playerId: player.id,
-      playerName: player.name,
-      score: player.score,
-      rank: 0, // 後で計算
-      idea: player.idea,
-      techCards: player.selectedCards,
-      aiScore: Math.floor(Math.random() * 100) + 50, // TODO: 実際のAI評価結果を使用
-      totalScore: player.score,
-    }))
+    .map(player => {
+      // TODO: 実際のAI評価結果を使用（現在はモックデータ）
+      const mockAiEvaluation: DetailedAIEvaluationResponse = {
+        totalScore: Math.floor(Math.random() * 40) + 50, // 50-90点
+        comment: "優れたアイデアで技術選定も適切です。実装への具体的なアプローチが明確で、実現可能性が高いと評価できます。",
+        generatedImageUrl: `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 1000)}`,
+        breakdown: {
+          criteria1: Math.floor(Math.random() * 8) + 12, // 12-20点
+          criteria2: Math.floor(Math.random() * 8) + 12, // 12-20点
+          criteria3: Math.floor(Math.random() * 8) + 12, // 12-20点
+          demoScore: Math.floor(Math.random() * 10) + 20, // 20-30点
+        }
+      };
+      
+      return {
+        playerId: player.id,
+        playerName: player.name,
+        score: player.score,
+        rank: 0, // 後で計算
+        idea: player.idea,
+        techCards: player.selectedCards,
+        aiEvaluation: mockAiEvaluation,
+        totalScore: player.score,
+      };
+    })
     .sort((a, b) => b.score - a.score)
     .map((player, index) => ({ ...player, rank: index + 1 }));
     
@@ -129,7 +145,7 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
                   </h3>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <span>総合スコア: {result.totalScore}pt</span>
-                    <span>今回獲得: +{result.aiScore}pt</span>
+                    <span>今回獲得: +{result.aiEvaluation.totalScore}pt</span>
                   </div>
                 </div>
               </div>
@@ -165,15 +181,57 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
             </div>
             
             {/* AI評価詳細 */}
-            <div className="mt-4 bg-purple-50 rounded-lg p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-purple-700">AI評価</span>
-                <span className="text-lg font-bold text-purple-800">
-                  {result.aiScore}点
-                </span>
-              </div>
-              <div className="mt-1 text-xs text-purple-600">
-                創造性・技術力・実現可能性・テーマ適合性を総合評価
+            <div className="mt-6 space-y-4">
+              {/* 生成画像 */}
+              {result.aiEvaluation.generatedImageUrl && (
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-2">生成画像</h4>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <img 
+                      src={result.aiEvaluation.generatedImageUrl}
+                      alt="AI生成画像"
+                      className="w-full max-w-md mx-auto rounded-lg"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* 採点詳細 */}
+              <div className="bg-purple-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-lg font-semibold text-purple-700">AI評価詳細</span>
+                  <span className="text-2xl font-bold text-purple-800">
+                    {result.aiEvaluation.totalScore}点
+                  </span>
+                </div>
+                
+                {/* 採点項目の内訳 */}
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div className="bg-white rounded p-2">
+                    <div className="text-xs text-gray-600">採点項目1</div>
+                    <div className="font-bold text-purple-700">{result.aiEvaluation.breakdown.criteria1}/20点</div>
+                  </div>
+                  <div className="bg-white rounded p-2">
+                    <div className="text-xs text-gray-600">採点項目2</div>
+                    <div className="font-bold text-purple-700">{result.aiEvaluation.breakdown.criteria2}/20点</div>
+                  </div>
+                  <div className="bg-white rounded p-2">
+                    <div className="text-xs text-gray-600">採点項目3</div>
+                    <div className="font-bold text-purple-700">{result.aiEvaluation.breakdown.criteria3}/20点</div>
+                  </div>
+                  <div className="bg-white rounded p-2">
+                    <div className="text-xs text-gray-600">デモ評価</div>
+                    <div className="font-bold text-purple-700">{result.aiEvaluation.breakdown.demoScore}/30点</div>
+                  </div>
+                </div>
+                
+                {/* 採点講評 */}
+                <div className="bg-white rounded-lg p-3">
+                  <div className="text-xs text-gray-600 mb-1">採点講評</div>
+                  <p className="text-sm text-gray-800 leading-relaxed">
+                    {result.aiEvaluation.comment}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

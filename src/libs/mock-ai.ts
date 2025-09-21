@@ -1,8 +1,27 @@
 import { AIEvaluationRequest, AIEvaluationResponse } from '@/types/game';
 
 /**
+ * 採点講評テンプレート
+ */
+const COMMENT_TEMPLATES = [
+  "優れたアイデアで技術選定も適切です。実装への具体的なアプローチが明確で、実現可能性が高いと評価できます。",
+  "創造的なアイデアですが、技術的な実装面でやや課題があります。もう少し具体的な技術選定があると良いでしょう。",
+  "技術的な深さがあり、実装レベルが高いです。ユーザー体験への配慮も見られ、完成度の高い提案です。",
+  "テーマに対する理解が深く、独創的なアプローチが評価できます。技術とアイデアのバランスが取れています。",
+  "実用性に優れた提案です。技術選定が適切で、実際のサービスとして展開できそうな完成度があります。"
+];
+
+/**
+ * ダミー画像URL生成
+ */
+const generateMockImageUrl = (theme: string, idea: string): string => {
+  const imageId = Math.floor(Math.random() * 1000) + 1;
+  return `https://picsum.photos/400/300?random=${imageId}&blur=1`;
+};
+
+/**
  * モックAI評価実装
- * Geminiの代わりに使用する擬似AI評価
+ * 新しい採点項目に対応した擬似AI評価
  */
 export async function evaluateHackathon({
   theme,
@@ -10,25 +29,56 @@ export async function evaluateHackathon({
   idea,
   techNames,
 }: AIEvaluationRequest): Promise<AIEvaluationResponse> {
-  // 2秒の擬似評価時間
-  await new Promise(resolve => setTimeout(resolve, 2000));
+  // 3秒の擬似評価時間
+  await new Promise(resolve => setTimeout(resolve, 3000));
 
-  // スコア計算ロジック
-  const techBonus = techNames.length * 15; // 技術1つにつき15点
+  // 各項目の採点ロジック
   const ideaLength = idea.trim().length;
-  const ideaBonus = Math.min(ideaLength / 5, 25); // アイデアの長さに応じて最大25点
+  const techCount = techNames.length;
   
-  // 方向性ボーナス（簡易実装）
-  const directionBonus = direction.length > 0 ? 10 : 0;
+  // 採点項目1: アイデアの独創性（20点満点）
+  const criteria1 = Math.min(Math.max(
+    10 + (ideaLength / 10) + Math.floor(Math.random() * 8), 
+    5
+  ), 20);
   
-  const randomBonus = Math.floor(Math.random() * 30) + 20; // 20-50点のランダム要素
+  // 採点項目2: 技術選定の適切性（20点満点）
+  const criteria2 = Math.min(Math.max(
+    8 + (techCount * 3) + Math.floor(Math.random() * 7), 
+    5
+  ), 20);
   
-  const baseScore = techBonus + ideaBonus + directionBonus + randomBonus;
-  const finalScore = Math.min(Math.max(baseScore, 20), 100); // 20-100点の範囲
+  // 採点項目3: テーマ適合性（20点満点）
+  const criteria3 = Math.min(Math.max(
+    12 + (direction.length > 0 ? 3 : 0) + Math.floor(Math.random() * 6), 
+    8
+  ), 20);
+  
+  // デモ評価点（30点満点）
+  const demoScore = Math.min(Math.max(
+    15 + Math.floor(Math.random() * 12) + (techCount * 2), 
+    10
+  ), 30);
 
-  console.log(`モックAI評価: テーマ「${theme}」, アイデア「${idea.trim() || 'アイデア未入力'}」, 技術: ${techNames.join(', ')}, スコア: ${Math.floor(finalScore)}`);
+  const totalScore = criteria1 + criteria2 + criteria3 + demoScore;
+  
+  // ランダムな講評を選択
+  const comment = COMMENT_TEMPLATES[Math.floor(Math.random() * COMMENT_TEMPLATES.length)];
+  
+  // ダミー画像URL生成
+  const generatedImageUrl = generateMockImageUrl(theme, idea);
+
+  console.log(`モックAI評価: テーマ「${theme}」, アイデア「${idea.trim() || 'アイデア未入力'}」, 技術: ${techNames.join(', ')}, 総合スコア: ${Math.floor(totalScore)}`);
 
   return {
-    score: Math.floor(finalScore)
+    totalScore: Math.floor(totalScore),
+    comment,
+    generatedImageUrl,
+    breakdown: {
+      criteria1: Math.floor(criteria1),
+      criteria2: Math.floor(criteria2),
+      criteria3: Math.floor(criteria3),
+      demoScore: Math.floor(demoScore)
+    }
   };
 }

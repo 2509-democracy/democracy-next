@@ -109,7 +109,7 @@ export default function SingleModePage() {
 
       // 技術レベルボーナス計算（場に出したカードのみ）
       const techLevelBonus = calculateFieldTechBonus(selectedCards, techLevels);
-      const roundScore = result.score + techLevelBonus;
+      const roundScore = result.totalScore + techLevelBonus;
       const resourceGain = calculateResourceGain(roundScore);
 
       // スコア更新

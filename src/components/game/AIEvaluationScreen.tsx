@@ -12,7 +12,7 @@ interface EvaluationProgress {
   playerId: string;
   playerName: string;
   status: 'waiting' | 'evaluating' | 'completed' | 'error';
-  score?: number;
+  totalScore?: number;
   comment?: string;
 }
 
@@ -67,8 +67,8 @@ export function AIEvaluationScreen({ onEvaluationComplete }: AIEvaluationScreenP
               ? { 
                   ...p, 
                   status: 'completed',
-                  score: result.score,
-                  comment: `スコア: ${result.score}点` // 簡易コメント
+                  totalScore: result.totalScore,
+                  comment: result.comment
                 }
               : p
           ));
@@ -189,9 +189,9 @@ export function AIEvaluationScreen({ onEvaluationComplete }: AIEvaluationScreenP
                     <h4 className="font-semibold text-gray-800">
                       {progress.playerName}
                     </h4>
-                    {progress.score && (
+                    {progress.totalScore && (
                       <p className="text-sm text-gray-600">
-                        スコア: {progress.score}点
+                        スコア: {progress.totalScore}点
                       </p>
                     )}
                   </div>
