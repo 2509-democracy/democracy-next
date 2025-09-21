@@ -7,14 +7,29 @@ export interface WebSocketMessage {
 
 type WebSocketPayload = Record<string, unknown>;
 
+export interface MatchingJoinedMessage extends WebSocketMessage {
+  type: 'matching_joined';
+  queueSize?: number;
+}
+
+export interface MatchingLeftMessage extends WebSocketMessage {
+  type: 'matching_left';
+}
+
+export interface MatchFoundMessage extends WebSocketMessage {
+  type: 'match_found';
+  roomId?: string;
+  players?: string[];
+}
+
 export interface WebSocketEventHandlers {
   onConnect?: () => void;
   onDisconnect?: () => void;
   onMessage?: (message: WebSocketMessage) => void;
   onError?: (error: Event) => void;
-  onMatchingJoined?: (data: WebSocketMessage) => void;
-  onMatchingLeft?: (data: WebSocketMessage) => void;
-  onMatchFound?: (data: WebSocketMessage) => void;
+  onMatchingJoined?: (data: MatchingJoinedMessage) => void;
+  onMatchingLeft?: (data: MatchingLeftMessage) => void;
+  onMatchFound?: (data: MatchFoundMessage) => void;
 }
 
 export class WebSocketClient {
@@ -69,13 +84,13 @@ export class WebSocketClient {
             // メッセージタイプ別の処理
             switch (message.type) {
               case 'matching_joined':
-                this.handlers.onMatchingJoined?.(message);
+                this.handlers.onMatchingJoined?.(message as MatchingJoinedMessage);
                 break;
               case 'matching_left':
-                this.handlers.onMatchingLeft?.(message);
+                this.handlers.onMatchingLeft?.(message as MatchingLeftMessage);
                 break;
               case 'match_found':
-                this.handlers.onMatchFound?.(message);
+                this.handlers.onMatchFound?.(message as MatchFoundMessage);
                 break;
               default:
                 this.handlers.onMessage?.(message);

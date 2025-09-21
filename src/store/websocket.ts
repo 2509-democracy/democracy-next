@@ -1,5 +1,11 @@
 import { atom } from 'jotai';
-import { WebSocketClient, createWebSocketClient } from '@/libs/websocket';
+import {
+  MatchFoundMessage,
+  MatchingJoinedMessage,
+  MatchingLeftMessage,
+  WebSocketClient,
+  createWebSocketClient,
+} from '@/libs/websocket';
 
 interface MatchingState {
   status: 'idle' | 'connecting' | 'waiting' | 'matched' | 'error';
@@ -64,27 +70,29 @@ export const connectAtom = atom(
           });
         },
         
-        onMatchingJoined: (data) => {
+        onMatchingJoined: (data: MatchingJoinedMessage) => {
           console.log('Joined matching queue:', data);
           set(matchingStateAtom, {
             status: 'waiting',
-            queueSize: data.queueSize || 0,
+            queueSize: typeof data.queueSize === 'number' ? data.queueSize : 0,
             players: [],
           });
         },
-        
-        onMatchingLeft: (data) => {
+
+        onMatchingLeft: (data: MatchingLeftMessage) => {
           console.log('Left matching queue:', data);
           set(matchingStateAtom, initialMatchingState);
         },
-        
-        onMatchFound: (data) => {
+
+        onMatchFound: (data: MatchFoundMessage) => {
           console.log('Match found:', data);
           set(matchingStateAtom, {
             status: 'matched',
             queueSize: 0,
             roomId: data.roomId,
-            players: data.players || [],
+            players: Array.isArray(data.players)
+              ? data.players.filter((player): player is string => typeof player === 'string')
+              : [],
           });
         },
       });
