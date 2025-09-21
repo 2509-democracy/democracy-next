@@ -6,13 +6,13 @@ import { TechCard } from '@/features/card-pool';
 
 // フェーズ持続時間の定数（秒単位）
 export const PHASE_DURATIONS: Record<MultiGamePhase, number> = {
-  waiting: 0,            // 無制限
-  matching: 0,           // 無制限
-  preparation: 60,       // 60秒
-  submission_review: 10, // 10秒（短時間表示）
-  ai_evaluation: 0,      // AI処理時間による（可変）
-  round_result: 60,      // 60秒
-  final_ranking: 0,      // 無制限
+  waiting: 0,           
+  matching: 0,          
+  preparation: 5,       
+  submission_review: 10,
+  ai_evaluation: 0,     
+  round_result: 60,     
+  final_ranking: 0,     
 };
 
 // タイムスタンプベースのタイマー計算関数
@@ -29,13 +29,14 @@ export function calculatePhaseEndTime(phaseStartTime: Date, phase: MultiGamePhas
   const duration = PHASE_DURATIONS[phase];
   return new Date(phaseStartTime.getTime() + (duration * 1000));
 }
-
 // 現在の時刻がフェーズ終了時刻を過ぎているかチェック
 export function isPhaseExpired(phaseStartTime: Date, phase: MultiGamePhase): boolean {
   const duration = PHASE_DURATIONS[phase];
   if (duration === 0) return false; // 無制限の場合は期限切れなし
   
-  return Date.now() > (phaseStartTime.getTime() + (duration * 1000));
+  const elapsed = Date.now() - phaseStartTime.getTime();
+  console.log(phaseStartTime, phase, elapsed, duration * 1000);
+  return elapsed > (duration * 1000);
 }
 
 // 初期状態
@@ -359,10 +360,18 @@ export const updateTimerFromTimestampAtom = atom(
     const timeLeft = calculateTimeLeft(multiState.currentPhaseStartTime, multiState.currentPhase);
     const isExpired = isPhaseExpired(multiState.currentPhaseStartTime, multiState.currentPhase);
     
+    console.log('[Timer Debug] updateTimerFromTimestamp:', {
+      phase: multiState.currentPhase,
+      timeLeft,
+      isExpired,
+      elapsed: Date.now() - multiState.currentPhaseStartTime.getTime()
+    });
+    
     set(multiGameStateAtom, {
       ...multiState,
-      timeLeft: Math.max(0, Math.floor(timeLeft)), // 確実に整数にする
-      isTimerActive: timeLeft > 0 && !isExpired,
+      timeLeft: Math.max(0, Math.floor(timeLeft)),
+      // 修正: 期限切れになるまで継続（timeLeft > 0の条件を削除）
+      isTimerActive: PHASE_DURATIONS[multiState.currentPhase] > 0 && !isExpired,
     });
     
     return { timeLeft: Math.floor(timeLeft), isExpired };
