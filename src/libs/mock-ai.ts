@@ -13,12 +13,7 @@ const COMMENT_TEMPLATES = [
 
 /**
  * ダミー画像URL生成
- */
-const generateMockImageUrl = (theme: string, idea: string): string => {
-  const imageId = Math.floor(Math.random() * 1000) + 1;
-  return `https://picsum.photos/400/300?random=${imageId}&blur=1`;
-};
-
+ * 
 /**
  * モックAI評価実装
  * 新しい採点項目に対応した擬似AI評価
@@ -36,24 +31,37 @@ export async function evaluateHackathon({
   // 各項目の採点ロジック
   const ideaLength = idea.trim().length;
   const techCount = techNames.length;
-  const response = await fetch(
-    process.env.NEXT_PUBLIC_IPOINT_API_KEY as string,
-    {
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json",
+  
+  // 環境変数が設定されていない場合はモックデータを使用
+  let response;
+  if (!process.env.NEXT_PUBLIC_IPOINT_API_KEY) {
+    response = {
+      breakdown: {
+        criteria1: Math.floor(Math.random() * 8) + 12, // 12-20点
+        criteria2: Math.floor(Math.random() * 8) + 12, // 12-20点
+        criteria3: Math.floor(Math.random() * 8) + 12, // 12-20点
       },
-      body: JSON.stringify({
-        idea,
-        techNames,
-        techLevels,
-        theme,
-        direction,
-      }),
-    }
-  ).then((res) => res.json());
-  console.log(response);
+      generatedImageUrl: generateMockImageUrl(theme, idea),
+    };
+  } else {
+    response = await fetch(
+      process.env.NEXT_PUBLIC_IPOINT_API_KEY as string,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idea,
+          techNames,
+          techLevels,
+          theme,
+          direction,
+        }),
+      }
+    ).then((res) => res.json());
+    console.log(response);
+  }
 
   // 採点項目1: アイデアの独創性（20点満点）
   const criteria1 = response.breakdown.criteria1;

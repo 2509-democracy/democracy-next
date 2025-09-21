@@ -27,18 +27,33 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
   // プレイヤー結果を生成（実際のデータを使用）
   const playerResults: PlayerResult[] = multiGameState.players
     .map(player => {
-      // TODO: 実際のAI評価結果を使用（現在はモックデータ）
-      const mockAiEvaluation: DetailedAIEvaluationResponse = {
-        totalScore: Math.floor(Math.random() * 40) + 50, // 50-90点
-        comment: "優れたアイデアで技術選定も適切です。実装への具体的なアプローチが明確で、実現可能性が高いと評価できます。",
-        generatedImageUrl: `https://picsum.photos/400/300?random=${Math.floor(Math.random() * 1000)}`,
-        breakdown: {
-          criteria1: Math.floor(Math.random() * 8) + 12, // 12-20点
-          criteria2: Math.floor(Math.random() * 8) + 12, // 12-20点
-          criteria3: Math.floor(Math.random() * 8) + 12, // 12-20点
-          demoScore: Math.floor(Math.random() * 10) + 20, // 20-30点
-        }
-      };
+      // 実際のAI評価結果を取得、なければモックデータを使用
+      const actualAIEvaluation = multiGameState.currentRoundAIEvaluations?.[player.id];
+      
+      let aiEvaluation: DetailedAIEvaluationResponse;
+      
+      if (actualAIEvaluation) {
+        // 実際のAI評価結果を使用
+        aiEvaluation = {
+          totalScore: actualAIEvaluation.totalScore,
+          comment: actualAIEvaluation.comment,
+          generatedImageUrl: actualAIEvaluation.generatedImageUrl,
+          breakdown: actualAIEvaluation.breakdown,
+        };
+      } else {
+        // フォールバック: モックデータを使用
+        aiEvaluation = {
+          totalScore: Math.floor(Math.random() * 40) + 50, // 50-90点
+          comment: "優れたアイデアで技術選定も適切です。実装への具体的なアプローチが明確で、実現可能性が高いと評価できます。",
+          generatedImageUrl: undefined, // モックデータでは画像なし
+          breakdown: {
+            criteria1: Math.floor(Math.random() * 8) + 12, // 12-20点
+            criteria2: Math.floor(Math.random() * 8) + 12, // 12-20点
+            criteria3: Math.floor(Math.random() * 8) + 12, // 12-20点
+            demoScore: Math.floor(Math.random() * 10) + 20, // 20-30点
+          }
+        };
+      }
       
       return {
         playerId: player.id,
@@ -47,7 +62,7 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
         rank: 0, // 後で計算
         idea: player.idea,
         techCards: player.selectedCards,
-        aiEvaluation: mockAiEvaluation,
+        aiEvaluation,
         totalScore: player.score,
       };
     })
@@ -191,6 +206,10 @@ export function RoundResult({ onNextRound, onFinishGame }: RoundResultProps) {
                       src={result.aiEvaluation.generatedImageUrl}
                       alt="AI生成画像"
                       className="w-full max-w-md mx-auto rounded-lg"
+                      onError={(e) => {
+                        // 画像読み込みエラー時は非表示にする
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
                   </div>
                 </div>
