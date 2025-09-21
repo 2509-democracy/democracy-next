@@ -35,7 +35,7 @@ export async function evaluateHackathon({
   // 各項目の採点ロジック
   const ideaLength = idea.trim().length;
   const techCount = techNames.length;
-  const response = await fetch("https://scoring-agents.naokimiura15.workers.dev/",({
+  const response = await fetch(process.env.NEXT_PUBLIC_IPOINT_API_KEY as string, {
     method: "POST",
 
     headers: {
@@ -47,8 +47,7 @@ export async function evaluateHackathon({
       theme,
       direction
     }),
-  })
-  ).then((res) => res.json());
+  }).then((res) => res.json());
   console.log(response)
   
   // 採点項目1: アイデアの独創性（20点満点）
