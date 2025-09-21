@@ -8,7 +8,7 @@ import { TechCard } from '@/features/card-pool';
 export const PHASE_DURATIONS: Record<MultiGamePhase, number> = {
   waiting: 0,           
   matching: 0,          
-  preparation: 5,       
+  preparation: 60,       
   submission_review: 10,
   ai_evaluation: 0,     
   round_result: 60,     
