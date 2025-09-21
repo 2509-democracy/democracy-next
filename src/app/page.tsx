@@ -76,7 +76,7 @@ export default function Home() {
   };
 
   return (
-    <div className="relative min-h-screen text-gray-100 flex items-center justify-center">
+    <div className="relative min-h-screen text-gray-100 flex items-center justify-center overflow-hidden">
       <div className={`transition-overlay ${isTransitioning ? 'active' : ''}`} />
       <div
         className={`lightning-container ${isLightningActive ? 'active' : ''}`}
