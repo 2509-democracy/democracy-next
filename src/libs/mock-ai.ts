@@ -13,7 +13,14 @@ const COMMENT_TEMPLATES = [
 
 /**
  * ダミー画像URL生成
- * 
+ */
+function generateMockImageUrl(theme: string, idea: string): string {
+  // テーマとアイデアに基づいてダミー画像URLを生成
+  const encodedTheme = encodeURIComponent(theme);
+  const encodedIdea = encodeURIComponent(idea.substring(0, 50)); // アイデアの最初の50文字
+  return `https://picsum.photos/400/300?random=${Date.now()}&theme=${encodedTheme}&idea=${encodedIdea}`;
+}
+
 /**
  * モックAI評価実装
  * 新しい採点項目に対応した擬似AI評価
