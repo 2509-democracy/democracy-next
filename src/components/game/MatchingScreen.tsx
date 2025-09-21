@@ -62,6 +62,7 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
   }, [matching.status, onStartGame]);
 
   const handleJoinMatching = () => {
+    console.log(isConnected, matching.status);
     if (isConnected && matching.status === 'idle') {
       joinMatching();
     }
