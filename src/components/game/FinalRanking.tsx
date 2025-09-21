@@ -209,8 +209,6 @@ export function FinalRanking({ onRestart, onBackToHome }: FinalRankingProps) {
         
         {/* 感謝メッセージ */}
         <div className="text-center mt-8 text-gray-600">
-          <p className="text-lg">ハッカソン・デベロッパーをプレイしていただき、ありがとうございました！</p>
-          <p className="text-sm mt-2">次回もぜひお楽しみください 🚀</p>
         </div>
       </div>
     </div>
