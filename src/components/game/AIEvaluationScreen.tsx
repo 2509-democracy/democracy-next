@@ -54,11 +54,13 @@ export function AIEvaluationScreen({ onEvaluationComplete }: AIEvaluationScreenP
         try {
           // AI評価の実行
           const techNames = player.selectedCards.map(card => card.name);
+          const techLevels = Object.fromEntries(player.selectedCards.map(card => [card.name, card.level]));
           const result = await evaluateHackathon({
             theme: "AI技術の活用", // TODO: 実際のテーマを取得
             direction: "実用的なソリューション", // TODO: 実際の方向性を取得
             idea: player.idea,
             techNames,
+            techLevels,
           });
           
           // 評価完了状態に更新

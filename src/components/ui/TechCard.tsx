@@ -27,9 +27,12 @@ export function TechCard({
 }: TechCardProps) {
   return (
     <div
-      className={`relative bg-white border-2 border-gray-300 p-1.5 rounded-lg w-28 cursor-pointer transition-transform duration-200 hover:scale-105 hover:border-blue-400 ${className}`}
+      className={`relative bg-white border-2 border-gray-300 p-1.5 rounded-lg w-28 cursor-pointer transition-all duration-200 hover:scale-105 hover:border-blue-400 group ${className}`}
       onClick={onClick}
     >
+      <div className="absolute inset-0 opacity-0 group-active:opacity-100 pointer-events-none">
+        <div className="absolute inset-0 animate-sparkle bg-gradient-to-r from-transparent via-white to-transparent" />
+      </div>
       {/* カテゴリバッジをリソースバッジと同じ形状・配置に変更 */}
       <div
         className={`absolute -top-1 -left-1 text-[10px] px-1 py-0.5 rounded-full text-white ${
