@@ -1,6 +1,6 @@
 import { useAtom } from 'jotai';
 import { playerRankingAtom, otherPlayersAtom, currentPlayerAtom, gameModeAtom } from '@/store/players';
-import { multiGameStateAtom } from '@/store/game';
+import { multiGameStateAtom, resourceAtom } from '@/store/game';
 import { PlayerInfoCard } from './PlayerInfoCard';
 
 interface PlayerListProps {
@@ -84,6 +84,8 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
   }
 
   // シングルモード用の既存のロジック
+  const [resource] = useAtom(resourceAtom);
+
   const playersToShow = gameMode === 'single' 
     ? (showCurrentPlayer ? [currentPlayer] : [])
     : (showCurrentPlayer ? playerRanking : otherPlayers);
@@ -112,7 +114,8 @@ export function PlayerList({ showCurrentPlayer = true, maxPlayers, isMultiMode =
       <div className="space-y-2 max-h-80 overflow-y-auto">
         {gameMode === 'single' && showCurrentPlayer ? (
           <PlayerInfoCard 
-            player={currentPlayer} 
+            // シングルモードでは表示リソースをresourceAtomに同期
+            player={{ ...currentPlayer, resource }} 
             showDetails={true}
           />
         ) : (
