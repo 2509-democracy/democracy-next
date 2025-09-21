@@ -103,8 +103,8 @@ export async function evaluateHackathon({
 
   const totalScore = criteria1 + criteria2 + criteria3 + demoScore;
 
-  // ランダムな講評を選択
-  const comment =
+  // APIレスポンスにcommentがある場合はそれを使用、ない場合はテンプレートを使用
+  const comment = response.comment || 
     COMMENT_TEMPLATES[Math.floor(Math.random() * COMMENT_TEMPLATES.length)];
 
   // ダミー画像URL生成

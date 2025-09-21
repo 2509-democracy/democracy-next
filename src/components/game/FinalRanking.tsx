@@ -1,5 +1,6 @@
 import { useAtom } from 'jotai';
-import { multiGameStateAtom } from '@/store/game';
+import { multiGameStateAtom, scoreAtom, techLevelsAtom } from '@/store/game';
+import { calculateFinalBonus } from '@/libs/game';
 import { Button } from '../ui/Button';
 
 interface FinalRankingProps {
@@ -18,19 +19,52 @@ interface FinalPlayerResult {
 
 export function FinalRanking({ onRestart, onBackToHome }: FinalRankingProps) {
   const [multiGameState] = useAtom(multiGameStateAtom);
+  const [score] = useAtom(scoreAtom);
+  const [techLevels] = useAtom(techLevelsAtom);
   
   // 最終結果の生成
   const finalResults: FinalPlayerResult[] = multiGameState.players
     .map(player => {
-      // 各ラウンドのスコア（仮データ - 実際はroundResultsから取得）
-      const roundScores = Array.from({ length: multiGameState.maxRounds }, 
-        () => Math.floor(Math.random() * 50) + 30);
-      const averageScore = Math.round(roundScores.reduce((a, b) => a + b, 0) / roundScores.length);
+      // シングルプレイの場合は実際のスコアと技術レベルボーナスを使用
+      let totalScore = player.score;
+      
+      // 現在のプレイヤーの場合は、実際のスコアと技術レベルボーナスを計算
+      if (player.id === multiGameState.currentPlayerId) {
+        const finalBonus = calculateFinalBonus(techLevels);
+        totalScore = score + finalBonus;
+      }
+      
+      // 実際のラウンド結果からスコアを取得
+      let roundScores: number[] = [];
+      let averageScore = 0;
+      
+      if (multiGameState.roundResults.length > 0) {
+        // 実際のラウンド結果からスコアを取得
+        roundScores = multiGameState.roundResults
+          .map(round => {
+            const playerResult = round.playerResults.find(pr => pr.playerId === player.id);
+            return playerResult ? playerResult.totalScore : 0;
+          });
+        
+        // 不足しているラウンドは0で埋める
+        while (roundScores.length < multiGameState.maxRounds) {
+          roundScores.push(0);
+        }
+        
+        averageScore = roundScores.length > 0 
+          ? Math.round(roundScores.reduce((a, b) => a + b, 0) / roundScores.length)
+          : 0;
+      } else {
+        // フォールバック: 仮データ
+        roundScores = Array.from({ length: multiGameState.maxRounds }, 
+          () => Math.floor(Math.random() * 50) + 30);
+        averageScore = Math.round(roundScores.reduce((a, b) => a + b, 0) / roundScores.length);
+      }
       
       return {
         playerId: player.id,
         playerName: player.name,
-        totalScore: player.score,
+        totalScore,
         rank: 0, // 後で計算
         roundScores,
         averageScore,

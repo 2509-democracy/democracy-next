@@ -125,10 +125,30 @@ export default function SingleModePage() {
       const newResource = resource + resourceGain;
       setScore(newScore);
       setResource(newResource);
+      
+      // マルチゲーム状態のプレイヤースコアも更新
+      setMultiGameState((prevState) => ({
+        ...prevState,
+        players: prevState.players.map(player => 
+          player.id === prevState.currentPlayerId 
+            ? { ...player, score: newScore, resource: newResource }
+            : player
+        ),
+      }));
 
       // 技術レベル更新
       const newTechLevels = upgradeTechLevels(techLevels, selectedCards);
       setTechLevels(newTechLevels);
+      
+      // マルチゲーム状態のプレイヤーの技術レベルも更新
+      setMultiGameState((prevState) => ({
+        ...prevState,
+        players: prevState.players.map(player => 
+          player.id === prevState.currentPlayerId 
+            ? { ...player, techLevels: newTechLevels }
+            : player
+        ),
+      }));
 
       // AI評価結果をマルチゲーム状態に保存
       setMultiGameState((prevState) => ({
@@ -137,6 +157,41 @@ export default function SingleModePage() {
           ...prevState.currentRoundAIEvaluations,
           "single-player": result, // シングルプレイヤーのIDで保存
         },
+      }));
+
+      // ラウンド結果を保存
+      const roundResult = {
+        roundNumber: turn,
+        theme: gameState.hackathonInfo.theme,
+        direction: gameState.hackathonInfo.direction,
+        playerResults: [{
+          playerId: "single-player",
+          playerName: "あなた",
+          submission: {
+            playerId: "single-player",
+            playerName: "あなた",
+            selectedCards,
+            idea,
+            techLevels: techLevelsSelected,
+          },
+          aiEvaluation: {
+            totalScore: result.totalScore,
+            comment: result.comment,
+            generatedImageUrl: result.generatedImageUrl,
+            breakdown: result.breakdown,
+          },
+          resourceGained: resourceGain,
+          techLevelGained: Object.fromEntries(
+            selectedCards.map(card => [card.name, 1])
+          ),
+          totalScore: roundScore, // ラウンドスコア（AI評価 + 技術レベルボーナス）
+        }],
+        timestamp: new Date(),
+      };
+
+      setMultiGameState((prevState) => ({
+        ...prevState,
+        roundResults: [...prevState.roundResults, roundResult],
       }));
 
       // カードリセット
@@ -201,6 +256,17 @@ export default function SingleModePage() {
           const finalBonus = calculateFinalBonus(techLevels);
           const totalFinalScore = score + finalBonus;
           setFinalScore(totalFinalScore);
+          
+          // マルチゲーム状態のプレイヤースコアも更新
+          setMultiGameState((prevState) => ({
+            ...prevState,
+            players: prevState.players.map(player => 
+              player.id === prevState.currentPlayerId 
+                ? { ...player, score: totalFinalScore }
+                : player
+            ),
+          }));
+          
           setGamePhase("final_ranking");
         } else {
           // 次のラウンドへ
@@ -215,6 +281,21 @@ export default function SingleModePage() {
   }, [multiGameState.isTimerActive, gamePhase, turn, techLevels, score, updateTimerFromTimestamp, handleNextRound]);
 
   const handleFinishGame = () => {
+    // ゲーム終了時に最終スコアを計算して更新
+    const finalBonus = calculateFinalBonus(techLevels);
+    const totalFinalScore = score + finalBonus;
+    setFinalScore(totalFinalScore);
+    
+    // マルチゲーム状態のプレイヤースコアも更新
+    setMultiGameState((prevState) => ({
+      ...prevState,
+      players: prevState.players.map(player => 
+        player.id === prevState.currentPlayerId 
+          ? { ...player, score: totalFinalScore }
+          : player
+      ),
+    }));
+    
     setGamePhase("final_ranking");
   };
 
