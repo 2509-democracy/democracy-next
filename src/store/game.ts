@@ -21,7 +21,7 @@ export function calculateTimeLeft(phaseStartTime: Date, phase: MultiGamePhase): 
   if (duration === 0) return 0; // 無制限の場合
   
   const elapsed = (Date.now() - phaseStartTime.getTime()) / 1000;
-  return Math.max(0, duration - elapsed);
+  return Math.max(0, Math.floor(duration - elapsed));
 }
 
 // 特定フェーズの終了時刻を計算
@@ -361,11 +361,11 @@ export const updateTimerFromTimestampAtom = atom(
     
     set(multiGameStateAtom, {
       ...multiState,
-      timeLeft: Math.max(0, timeLeft),
+      timeLeft: Math.max(0, Math.floor(timeLeft)), // 確実に整数にする
       isTimerActive: timeLeft > 0 && !isExpired,
     });
     
-    return { timeLeft, isExpired };
+    return { timeLeft: Math.floor(timeLeft), isExpired };
   }
 );
 
