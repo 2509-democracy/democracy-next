@@ -81,6 +81,7 @@ export interface AIEvaluationRequest {
   direction: string;
   idea: string;
   techNames: string[];
+  techLevels: Record<string, number>;
 }
 
 export interface AIEvaluationResponse {
