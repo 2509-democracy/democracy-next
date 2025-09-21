@@ -6,13 +6,16 @@ import { Hand } from '@/components/game/Hand';
 
 export function ShopHandTabs() {
   const [activeTab, setActiveTab] = useState<'shop' | 'hand'>('shop');
-  const [isBottomPaneOpen] = useAtom(bottomPaneAtom);
+  const [isBottomPaneOpen, setBottomPaneOpen] = useAtom(bottomPaneAtom);
 
   if (!isBottomPaneOpen) {
     return (
       <div className="flex items-center gap-4 h-full">
         <button
-          onClick={() => setActiveTab('shop')}
+          onClick={() => {
+            setActiveTab('shop');
+            if (!isBottomPaneOpen) setBottomPaneOpen(true);
+          }}
           className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
             activeTab === 'shop'
               ? 'bg-cyan-600 text-white'
@@ -22,7 +25,10 @@ export function ShopHandTabs() {
           ショップ
         </button>
         <button
-          onClick={() => setActiveTab('hand')}
+          onClick={() => {
+            setActiveTab('hand');
+            if (!isBottomPaneOpen) setBottomPaneOpen(true);
+          }}
           className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
             activeTab === 'hand'
               ? 'bg-orange-600 text-white'
