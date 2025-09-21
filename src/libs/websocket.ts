@@ -23,6 +23,8 @@ export class WebSocketClient {
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
   private reconnectDelay: number = 1000;
+  private maxReconnectDelay: number = 30000; // 最大30秒
+  private isIntentionallyDisconnected: boolean = false;
 
   constructor(url: string, handlers: WebSocketEventHandlers = {}) {
     this.url = url;
@@ -45,7 +47,10 @@ export class WebSocketClient {
         this.socket.onclose = () => {
           console.log('WebSocket disconnected');
           this.handlers.onDisconnect?.();
-          this.handleReconnect();
+          // 意図的な切断でなければ再接続を試行
+          if (!this.isIntentionallyDisconnected) {
+            this.handleReconnect();
+          }
         };
 
         this.socket.onerror = (error) => {
@@ -89,7 +94,10 @@ export class WebSocketClient {
   private handleReconnect(): void {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
-      const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+      const delay = Math.min(
+        this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
+        this.maxReconnectDelay
+      );
       
       console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
       
@@ -138,6 +146,7 @@ export class WebSocketClient {
   }
 
   disconnect(): void {
+    this.isIntentionallyDisconnected = true; // 意図的な切断をマーク
     if (this.socket) {
       this.socket.close();
       this.socket = null;

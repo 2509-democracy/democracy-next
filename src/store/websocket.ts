@@ -26,9 +26,16 @@ export const connectAtom = atom(
   async (get, set, url: string) => {
     const client = get(webSocketClientAtom);
     
-    // 既存接続があれば切断
+    // 既存接続があれば完全に切断を待つ
     if (client) {
       client.disconnect();
+      set(webSocketClientAtom, null);
+      set(isConnectedAtom, false);
+      
+      // 切断処理の完了を確実に待つ
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 100);
+      });
     }
 
     set(matchingStateAtom, { ...initialMatchingState, status: 'connecting' });
@@ -87,11 +94,14 @@ export const connectAtom = atom(
       
     } catch (error) {
       console.error('Failed to connect:', error);
+      set(webSocketClientAtom, null);
+      set(isConnectedAtom, false);
       set(matchingStateAtom, {
         ...initialMatchingState,
         status: 'error',
         error: 'Failed to connect to server'
       });
+      throw error; // エラーを上位に伝播
     }
   }
 );

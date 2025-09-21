@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { 
   isConnectedAtom, 
   matchingStateAtom, 
@@ -21,22 +21,21 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
   const [, disconnect] = useAtom(disconnectAtom);
   const [,  joinMatching] = useAtom(joinMatchingAtom);
   const [, leaveMatching] = useAtom(leaveMatchingAtom);
-  
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'connected'>('idle');
 
   // WebSocket接続の初期化
   useEffect(() => {
+    let isCancelled = false;
+    
     const initializeConnection = async () => {
-      if (connectionStatus === 'idle') {
-        setConnectionStatus('connecting');
+      if (!isCancelled) {
         try {
           // TODO: 実際のWebSocketエンドポイントURLに置き換える
           const wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'wss://your-websocket-endpoint.com';
           await connect(wsUrl);
-          setConnectionStatus('connected');
         } catch (error) {
-          console.error('Failed to connect to WebSocket:', error);
-          setConnectionStatus('idle');
+          if (!isCancelled) {
+            console.error('Failed to connect to WebSocket:', error);
+          }
         }
       }
     };
@@ -44,10 +43,11 @@ export function MatchingScreen({ onStartGame }: MatchingScreenProps) {
     initializeConnection();
 
     return () => {
+      isCancelled = true;
       // コンポーネントアンマウント時に切断
       disconnect();
     };
-  }, [connect, disconnect, connectionStatus]);
+  }, []); // 空の依存配列 - 初回マウント時のみ実行
 
   // マッチング成功時の処理
   useEffect(() => {
