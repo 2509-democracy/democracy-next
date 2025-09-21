@@ -10,13 +10,13 @@ export function PlayerInfoCard({ player, rank, showDetails = true }: PlayerInfoP
   const getPhaseColor = (phase: PlayerInfo['phase']) => {
     switch (phase) {
       case 'preparation':
-        return 'text-blue-600 bg-blue-50';
+        return 'border border-sky-400/40 bg-slate-900/70 text-sky-200';
       case 'hackathon':
-        return 'text-orange-600 bg-orange-50';
+        return 'border border-orange-400/40 bg-slate-900/70 text-orange-200';
       case 'finished':
-        return 'text-green-600 bg-green-50';
+        return 'border border-emerald-400/40 bg-slate-900/70 text-emerald-200';
       default:
-        return 'text-gray-600 bg-gray-50';
+        return 'border border-slate-700/50 bg-slate-900/70 text-slate-300';
     }
   };
 
@@ -34,67 +34,73 @@ export function PlayerInfoCard({ player, rank, showDetails = true }: PlayerInfoP
   };
 
   return (
-    <div className={`bg-white border rounded-lg p-3 ${player.isCurrentPlayer ? 'border-blue-400 bg-blue-50' : 'border-gray-200'}`}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
+    <div className={`rounded-xl border p-4 backdrop-blur-sm ${
+      player.isCurrentPlayer
+        ? 'border-sky-400/50 bg-slate-950/80 shadow-[0_0_35px_rgba(56,189,248,0.3)]'
+        : 'border-slate-700/60 bg-slate-950/70 shadow-[0_0_25px_rgba(15,23,42,0.6)]'
+    }`}>
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
           {rank && (
-            <span className="text-xs font-bold text-gray-600 bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-cyan-400/40 bg-slate-900/80 text-xs font-bold text-cyan-200">
               {rank}
             </span>
           )}
-          <span className={`font-semibold ${player.isCurrentPlayer ? 'text-blue-800' : 'text-gray-800'}`}>
+          <span className={`text-sm font-semibold tracking-wide ${player.isCurrentPlayer ? 'text-cyan-200' : 'text-slate-100'}`}>
             {player.name}
           </span>
           {player.isCurrentPlayer && (
-            <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
-              あなた
+            <span className="rounded-full border border-cyan-300/50 bg-cyan-500/30 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.3em] text-cyan-100">
+              YOU
             </span>
           )}
         </div>
-        <span className={`text-xs px-2 py-1 rounded-full ${getPhaseColor(player.phase)}`}>
+        <span className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] ${getPhaseColor(player.phase)}`}>
           {getPhaseLabel(player.phase)}
         </span>
       </div>
 
-      <div className="space-y-1">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">スコア:</span>
-          <span className="font-bold text-yellow-600">{player.score}</span>
+      <div className="space-y-2 text-xs">
+        <div className="flex items-center justify-between text-slate-300">
+          <span>スコア</span>
+          <span className="rounded-full border border-amber-300/40 bg-slate-900/70 px-3 py-1 text-sm font-bold text-amber-200">
+            {player.score}
+          </span>
         </div>
-        
+
         {showDetails && (
           <>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">リソース:</span>
-              <span className="font-medium text-green-600">{player.resource}</span>
+            <div className="flex items-center justify-between text-slate-300">
+              <span>リソース</span>
+              <span className="rounded-full border border-emerald-300/40 bg-slate-900/70 px-3 py-1 text-sm font-semibold text-emerald-200">
+                {player.resource}
+              </span>
             </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">ターン:</span>
-              <span className="text-sm text-gray-800">{player.turn}</span>
+
+            <div className="flex items-center justify-between text-slate-300">
+              <span>ターン</span>
+              <span className="text-sm font-semibold text-slate-100">{player.turn}</span>
             </div>
-            
+
             {Object.keys(player.techLevels).length > 0 && (
-              <div className="pt-2 border-t border-gray-100">
-                <span className="text-xs text-gray-600">技術レベル:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
+              <div className="border-t border-cyan-400/10 pt-3 text-slate-300">
+                <span className="text-[10px] uppercase tracking-[0.3em] text-cyan-200">Tech Levels</span>
+                <div className="mt-2 flex flex-wrap gap-2">
                   {Object.entries(player.techLevels).slice(0, 3).map(([tech, level]) => (
-                    <span key={tech} className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                    <span key={tech} className="rounded-full border border-cyan-400/30 bg-slate-900/70 px-3 py-1 text-[10px] font-semibold text-cyan-100 uppercase tracking-[0.3em]">
                       {tech} Lv.{level}
                     </span>
                   ))}
                   {Object.keys(player.techLevels).length > 3 && (
-                    <span className="text-xs text-gray-500">
-                      +{Object.keys(player.techLevels).length - 3}
-                    </span>
+                    <span className="text-[10px] text-slate-400">+{Object.keys(player.techLevels).length - 3}</span>
                   )}
                 </div>
               </div>
             )}
-            
+
             {player.selectedCards.length > 0 && (
-              <div className="pt-2">
-                <span className="text-xs text-gray-600">選択カード: {player.selectedCards.length}枚</span>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-slate-400">
+                選択カード: {player.selectedCards.length}枚
               </div>
             )}
           </>

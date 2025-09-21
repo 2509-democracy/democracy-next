@@ -42,6 +42,29 @@ export function FinalRanking({ onRestart, onBackToHome }: FinalRankingProps) {
   const currentPlayer = finalResults.find(p => p.playerId === multiGameState.currentPlayerId);
   const winner = finalResults[0];
   const isCurrentPlayerWinner = currentPlayer?.rank === 1;
+
+  const summaryStats = [
+    {
+      label: '総ラウンド数',
+      value: multiGameState.maxRounds,
+      color: 'text-cyan-200',
+    },
+    {
+      label: '参加プレイヤー',
+      value: multiGameState.players.length,
+      color: 'text-emerald-200',
+    },
+    {
+      label: '最高スコア',
+      value: Math.max(...finalResults.map(r => r.totalScore)),
+      color: 'text-fuchsia-200',
+    },
+    {
+      label: '平均スコア',
+      value: Math.round(finalResults.reduce((sum, r) => sum + r.averageScore, 0) / finalResults.length),
+      color: 'text-orange-200',
+    },
+  ];
   
   const getRankEmoji = (rank: number) => {
     switch (rank) {
@@ -54,100 +77,111 @@ export function FinalRanking({ onRestart, onBackToHome }: FinalRankingProps) {
   
   const getRankColor = (rank: number) => {
     switch (rank) {
-      case 1: return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white';
-      case 2: return 'bg-gradient-to-r from-gray-300 to-gray-500 text-white';
-      case 3: return 'bg-gradient-to-r from-orange-400 to-orange-600 text-white';
-      default: return 'bg-gradient-to-r from-blue-400 to-blue-600 text-white';
+      case 1: return 'border-amber-400/50 bg-slate-950/80 text-amber-200 shadow-[0_0_35px_rgba(250,204,21,0.35)]';
+      case 2: return 'border-slate-500/50 bg-slate-950/80 text-slate-200 shadow-[0_0_30px_rgba(148,163,184,0.35)]';
+      case 3: return 'border-orange-400/50 bg-slate-950/80 text-orange-200 shadow-[0_0_35px_rgba(249,115,22,0.35)]';
+      default: return 'border-cyan-400/40 bg-slate-950/80 text-cyan-200 shadow-[0_0_25px_rgba(56,189,248,0.3)]';
     }
   };
   
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* ヘッダー */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-4">
-            🏆 最終結果発表
-          </h1>
-          <p className="text-lg text-gray-600">
-            全{multiGameState.maxRounds}ラウンドが終了しました！
-          </p>
-        </div>
-        
-        {/* 優勝者の特別表示 */}
-        <div className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 rounded-2xl p-8 mb-8 text-white shadow-2xl">
+    <div className="relative min-h-screen overflow-hidden bg-slate-950">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: "url(/title_image.png)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          filter: "brightness(0.3)",
+        }}
+        aria-hidden="true"
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-slate-950/85 to-black/95" aria-hidden="true" />
+
+      <div className="relative z-10 px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl space-y-10">
+          {/* ヘッダー */}
           <div className="text-center">
+            <h1 className="mb-4 text-4xl font-black uppercase tracking-[0.4em] text-cyan-200">
+              🏆 最終結果発表
+            </h1>
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+              全{multiGameState.maxRounds}ラウンドが終了しました！
+            </p>
+          </div>
+
+          {/* 優勝者の特別表示 */}
+          <div className="overflow-hidden rounded-3xl border border-amber-400/40 bg-gradient-to-br from-amber-500/30 via-amber-500/20 to-transparent p-10 text-center text-amber-100 shadow-[0_0_80px_rgba(250,204,21,0.35)] backdrop-blur-xl">
             <div className="text-6xl mb-4">🏆</div>
-            <h2 className="text-3xl font-bold mb-2">優勝</h2>
-            <h3 className="text-4xl font-bold mb-4">{winner.playerName}</h3>
-            <div className="text-2xl font-semibold">
+            <h2 className="text-2xl font-semibold tracking-[0.35em] uppercase">優勝</h2>
+            <h3 className="mt-3 text-4xl font-black text-white">{winner.playerName}</h3>
+            <div className="mt-4 text-xl font-semibold tracking-[0.3em] text-amber-200">
               総合スコア: {winner.totalScore}点
             </div>
             {isCurrentPlayerWinner && (
-              <div className="mt-4 text-xl animate-bounce">
+              <div className="mt-6 text-lg uppercase tracking-[0.4em] text-white animate-bounce">
                 🎉 おめでとうございます！ 🎉
               </div>
             )}
           </div>
-        </div>
         
         {/* 全体ランキング */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+        <div className="space-y-6 rounded-3xl border border-cyan-400/30 bg-slate-950/70 p-6 shadow-[0_0_60px_rgba(56,189,248,0.35)] backdrop-blur-xl">
+          <h3 className="text-center text-2xl font-bold uppercase tracking-[0.35em] text-cyan-200">
             最終ランキング
           </h3>
-          
-          <div className="space-y-4">
+
+          <div className="space-y-5">
             {finalResults.map((result) => (
-              <div 
+              <div
                 key={result.playerId}
-                className={`rounded-lg p-6 border-2 ${
+                className={`rounded-3xl border p-6 transition-all duration-300 hover:-translate-y-1 ${
                   result.playerId === multiGameState.currentPlayerId
-                    ? 'border-blue-400 bg-blue-50'
-                    : 'border-gray-200 bg-white'
+                    ? 'border-sky-400/60 bg-slate-950/80 shadow-[0_0_45px_rgba(56,189,248,0.35)]'
+                    : 'border-slate-700/60 bg-slate-950/70 shadow-[0_0_35px_rgba(15,23,42,0.6)]'
                 }`}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-5">
                     {/* ランク表示 */}
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold ${getRankColor(result.rank)}`}>
+                    <div className={`flex h-16 w-16 items-center justify-center rounded-full border text-2xl font-bold ${getRankColor(result.rank)}`}>
                       {getRankEmoji(result.rank)}
                     </div>
-                    
+
                     <div>
-                      <h4 className="text-xl font-bold text-gray-800">
+                      <h4 className="text-lg font-semibold text-slate-100">
                         {result.rank}位 - {result.playerName}
                         {result.playerId === multiGameState.currentPlayerId && (
-                          <span className="ml-2 text-blue-600 text-sm">(あなた)</span>
+                          <span className="ml-3 text-xs uppercase tracking-[0.3em] text-cyan-300">(あなた)</span>
                         )}
                       </h4>
-                      <p className="text-gray-600">
+                      <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
                         平均スコア: {result.averageScore}点/ラウンド
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-gray-800">
+                    <div className="text-3xl font-black text-white tracking-[0.2em]">
                       {result.totalScore}
                     </div>
-                    <div className="text-gray-600 text-sm">総合スコア</div>
+                    <div className="text-xs uppercase tracking-[0.3em] text-slate-400">総合スコア</div>
                   </div>
                 </div>
-                
+
                 {/* ラウンド別スコア */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h5 className="text-sm font-semibold text-gray-700 mb-2">
+                <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4">
+                  <h5 className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-300">
                     ラウンド別スコア
                   </h5>
-                  <div className="grid grid-cols-5 gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                     {result.roundScores.map((score, roundIndex) => (
-                      <div 
+                      <div
                         key={roundIndex}
-                        className="text-center bg-white rounded p-2"
+                        className="rounded-xl border border-slate-700/50 bg-slate-950/80 p-3 text-center text-slate-200"
                       >
-                        <div className="text-xs text-gray-600">R{roundIndex + 1}</div>
-                        <div className="font-bold text-gray-800">{score}</div>
+                        <div className="text-[10px] uppercase tracking-[0.3em] text-slate-400">R{roundIndex + 1}</div>
+                        <div className="text-sm font-semibold text-white">{score}</div>
                       </div>
                     ))}
                   </div>
@@ -158,49 +192,35 @@ export function FinalRanking({ onRestart, onBackToHome }: FinalRankingProps) {
         </div>
         
         {/* ゲーム統計 */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">ゲーム統計</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {multiGameState.maxRounds}
+        <div className="rounded-3xl border border-cyan-400/30 bg-slate-950/70 p-6 shadow-[0_0_45px_rgba(56,189,248,0.3)] backdrop-blur-xl">
+          <h3 className="text-xl font-semibold uppercase tracking-[0.35em] text-cyan-200 mb-6">ゲーム統計</h3>
+          <div className="grid grid-cols-2 gap-6 text-center md:grid-cols-4">
+            {summaryStats.map((stat) => (
+              <div key={stat.label} className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4 shadow-[0_0_25px_rgba(15,23,42,0.6)]">
+                <div className={`text-3xl font-black tracking-[0.2em] ${stat.color}`}>
+                  {stat.value}
+                </div>
+                <div className="mt-2 text-[10px] uppercase tracking-[0.3em] text-slate-400">{stat.label}</div>
               </div>
-              <div className="text-sm text-gray-600">総ラウンド数</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {multiGameState.players.length}
-              </div>
-              <div className="text-sm text-gray-600">参加プレイヤー</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
-                {Math.max(...finalResults.map(r => r.totalScore))}
-              </div>
-              <div className="text-sm text-gray-600">最高スコア</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {Math.round(finalResults.reduce((sum, r) => sum + r.averageScore, 0) / finalResults.length)}
-              </div>
-              <div className="text-sm text-gray-600">平均スコア</div>
-            </div>
+            ))}
           </div>
         </div>
-        
+
         {/* アクションボタン */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
             variant="primary"
             size="lg"
+            className="border border-cyan-300/40 bg-gradient-to-r from-cyan-500/70 to-sky-500/70 text-xs uppercase tracking-[0.35em] text-white shadow-[0_0_35px_rgba(56,189,248,0.35)] hover:from-cyan-400/70 hover:to-sky-400/70"
             onClick={onRestart}
           >
             もう一度プレイ
           </Button>
-          
+
           <Button
             variant="secondary"
             size="lg"
+            className="border border-slate-700/60 bg-slate-900/70 text-xs uppercase tracking-[0.35em] text-slate-300 hover:border-cyan-300/40 hover:text-cyan-100"
             onClick={onBackToHome}
           >
             ホームに戻る
@@ -208,9 +228,13 @@ export function FinalRanking({ onRestart, onBackToHome }: FinalRankingProps) {
         </div>
         
         {/* 感謝メッセージ */}
-        <div className="text-center mt-8 text-gray-600">
+        <div className="text-center text-xs uppercase tracking-[0.35em] text-slate-400">
+          ご参加ありがとうございました！
+        </div>
         </div>
       </div>
     </div>
   );
 }
+
+export default FinalRanking;

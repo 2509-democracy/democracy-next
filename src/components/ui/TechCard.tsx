@@ -1,9 +1,9 @@
 import { TechCard as TechCardType } from "@/features/card-pool";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Frontend: "bg-red-500",
-  Backend: "bg-blue-500",
-  Other: "bg-yellow-500",
+  Frontend: "from-pink-500/80 to-rose-500/60",
+  Backend: "from-sky-500/80 to-cyan-500/60",
+  Other: "from-amber-400/80 to-yellow-400/60",
 };
 
 function renderEmojis(count: number, emoji: string) {
@@ -27,16 +27,16 @@ export function TechCard({
 }: TechCardProps) {
   return (
     <div
-      className={`relative bg-white border-2 border-gray-300 p-1.5 rounded-lg w-28 cursor-pointer transition-all duration-200 hover:scale-105 hover:border-blue-400 group ${className}`}
+      className={`group relative w-32 cursor-pointer rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-950/90 p-2 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0_35px_rgba(56,189,248,0.35)] ${className}`}
       onClick={onClick}
     >
-      <div className="absolute inset-0 opacity-0 group-active:opacity-100 pointer-events-none">
-        <div className="absolute inset-0 animate-sparkle bg-gradient-to-r from-transparent via-white to-transparent" />
+      <div className="pointer-events-none absolute inset-0 opacity-0 group-active:opacity-100">
+        <div className="absolute inset-0 animate-sparkle bg-gradient-to-r from-transparent via-white/70 to-transparent" />
       </div>
       {/* カテゴリバッジをリソースバッジと同じ形状・配置に変更 */}
       <div
-        className={`absolute -top-1 -left-1 text-[10px] px-1 py-0.5 rounded-full text-white ${
-          CATEGORY_COLORS[card.category] ?? "bg-gray-500"
+        className={`absolute -top-2 -left-2 rounded-full bg-gradient-to-r px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-white ${
+          CATEGORY_COLORS[card.category] ?? 'from-slate-500/80 to-slate-600/60'
         }`}
         style={{ zIndex: 2 }}
       >
@@ -51,13 +51,13 @@ export function TechCard({
           style={{ display: "block" }}
         />
       )}
-      <div className="font-bold text-center text-gray-900 text-base truncate mb-1 mt-0">
+      <div className="mt-2 mb-1 truncate text-center text-sm font-semibold uppercase tracking-[0.3em] text-cyan-200">
         {card.name}
       </div>
-      <div className="text-center text-gray-600 mb-2 text-xs">
+      <div className="mb-2 text-center text-[10px] uppercase tracking-[0.3em] text-slate-300">
         Lv.{techLevel ?? card.level}
       </div>
-      <div className="mb-1 text-[10px] w-full">
+      <div className="mb-2 w-full text-[10px] text-slate-300">
         <table className="w-full">
           <tbody>
             {[
@@ -65,16 +65,16 @@ export function TechCard({
               { label: "人気", value: renderEmojis(card.popularity, "⭐") },
               { label: "性能", value: renderEmojis(card.performance, "⚡") },
             ].map(({ label, value }) => (
-              <tr key={label}>
-                <td className="pr-1 text-left">{label}:</td>
-                <td className="text-left">{value}</td>
+              <tr key={label} className="">
+                <td className="pr-1 text-left text-slate-500">{label}:</td>
+                <td className="text-left text-slate-100">{value}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       {/* リソースバッジ（右上） */}
-      <div className="absolute -top-1 -right-1 bg-gray-800 text-white text-[10px] px-1 py-0.5 rounded-full">
+      <div className="absolute -top-2 -right-2 rounded-full border border-amber-300/40 bg-amber-500/30 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-amber-100">
         {badge}
       </div>
     </div>

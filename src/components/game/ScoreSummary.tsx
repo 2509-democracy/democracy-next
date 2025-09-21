@@ -19,36 +19,36 @@ export function ScoreSummary({ isMultiMode = false }: ScoreSummaryProps) {
 
   // シングルモード専用のスコア表示
   return (
-    <div className="space-y-3">
-      <div>
-        <h3 className="text-base font-semibold text-gray-800 mb-2">現在のスコア</h3>
-        <div className="bg-yellow-50 p-2 rounded-lg text-center">
-          <div className="text-xl font-bold text-yellow-600">{score}</div>
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-amber-400/30 bg-slate-950/70 p-4 shadow-[0_0_35px_rgba(250,204,21,0.25)]">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-amber-200">Current Score</h3>
+        <div className="text-center text-3xl font-black text-amber-200 tracking-[0.4em]">
+          {score}
         </div>
       </div>
 
-      <div>
-        <h3 className="text-base font-semibold text-gray-800 mb-2">技術レベル</h3>
-        <div className="space-y-1 max-h-32 overflow-y-auto">
+      <div className="rounded-2xl border border-cyan-400/30 bg-slate-950/70 p-4 shadow-[0_0_35px_rgba(56,189,248,0.25)]">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">Tech Levels</h3>
+        <div className="space-y-2 overflow-y-auto pr-1 text-xs">
           {Object.keys(techLevels).length > 0 ? (
             Object.entries(techLevels).map(([techId, level]) => (
-              <div key={techId} className="flex justify-between items-center bg-blue-50 p-1.5 rounded text-xs">
-                <span className="font-medium text-gray-700 truncate">{techId}</span>
-                <span className="font-bold text-blue-600">Lv.{level}</span>
+              <div key={techId} className="flex items-center justify-between rounded-xl border border-cyan-400/20 bg-slate-900/70 px-3 py-2 text-slate-100">
+                <span className="font-semibold truncate">{techId}</span>
+                <span className="text-sm font-bold text-cyan-200">Lv.{level}</span>
               </div>
             ))
           ) : (
-            <div className="text-xs text-gray-500 italic text-center">技術なし</div>
+            <div className="text-center text-[10px] uppercase tracking-[0.4em] text-slate-400">
+              技術なし
+            </div>
           )}
         </div>
       </div>
 
       {techLevelBonus > 0 && (
-        <div>
-          <h3 className="text-base font-semibold text-gray-800 mb-1">ボーナス</h3>
-          <div className="bg-green-50 p-2 rounded-lg text-center">
-            <div className="text-lg font-bold text-green-600">+{techLevelBonus}</div>
-          </div>
+        <div className="rounded-2xl border border-emerald-400/30 bg-slate-950/70 p-4 shadow-[0_0_35px_rgba(16,185,129,0.25)]">
+          <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.35em] text-emerald-200">Bonus</h3>
+          <div className="text-center text-2xl font-black text-emerald-200 tracking-[0.4em]">+{techLevelBonus}</div>
         </div>
       )}
     </div>

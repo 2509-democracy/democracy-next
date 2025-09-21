@@ -41,10 +41,10 @@ export function PaneToggle({ pane, position = 'header', className = '' }: PaneTo
     <button
       onClick={() => togglePane(pane)}
       className={`
-        flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 text-base shadow-md
-        ${position === 'header' 
-          ? 'text-gray-600 hover:text-gray-800 hover:bg-gray-100' 
-          : 'bg-white border-2 border-gray-300 text-gray-600 hover:text-gray-800 hover:border-gray-400 hover:shadow-lg'
+        flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-200 text-base shadow-[0_0_20px_rgba(56,189,248,0.25)]
+        ${position === 'header'
+          ? 'border-cyan-400/40 bg-slate-900/70 text-cyan-200 hover:border-cyan-300 hover:text-white hover:bg-slate-800'
+          : 'border-cyan-300/40 bg-slate-900/80 text-cyan-200 hover:border-cyan-200 hover:text-white hover:bg-slate-800'
         }
         ${className}
       `}

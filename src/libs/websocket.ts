@@ -2,17 +2,19 @@ import { v4 as uuidv4 } from 'uuid';
 
 export interface WebSocketMessage {
   type: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
+
+type WebSocketPayload = Record<string, unknown>;
 
 export interface WebSocketEventHandlers {
   onConnect?: () => void;
   onDisconnect?: () => void;
   onMessage?: (message: WebSocketMessage) => void;
   onError?: (error: Event) => void;
-  onMatchingJoined?: (data: any) => void;
-  onMatchingLeft?: (data: any) => void;
-  onMatchFound?: (data: any) => void;
+  onMatchingJoined?: (data: WebSocketMessage) => void;
+  onMatchingLeft?: (data: WebSocketMessage) => void;
+  onMatchFound?: (data: WebSocketMessage) => void;
 }
 
 export class WebSocketClient {
@@ -59,9 +61,9 @@ export class WebSocketClient {
           reject(error);
         };
 
-        this.socket.onmessage = (event) => {
+        this.socket.onmessage = (event: MessageEvent<string>) => {
           try {
-            const message: WebSocketMessage = JSON.parse(event.data);
+            const message = JSON.parse(event.data) as WebSocketMessage;
             console.log('WebSocket message received:', message);
             
             // メッセージタイプ別の処理
@@ -111,7 +113,7 @@ export class WebSocketClient {
     }
   }
 
-  sendMessage(message: any): void {
+  sendMessage(message: WebSocketPayload): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       const messageToSend = {
         ...message,

@@ -112,51 +112,51 @@ export function AIEvaluationScreen({ onEvaluationComplete }: AIEvaluationScreenP
   }, [multiGameState.currentPhase]);
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 text-slate-100">
       {/* ヘッダー */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+        <h2 className="mb-3 text-3xl font-black uppercase tracking-[0.4em] text-cyan-200">
           🤖 AI評価中...
         </h2>
-        <p className="text-gray-600">
+        <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
           各プレイヤーのアイデアをAIが評価しています
         </p>
       </div>
-      
+
       {/* 全体の進捗 */}
-      <div className="bg-white rounded-lg p-6 border">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">評価進捗</h3>
-          <span className="text-2xl font-bold text-blue-600">
+      <div className="rounded-3xl border border-cyan-400/30 bg-slate-950/70 p-6 shadow-[0_0_45px_rgba(56,189,248,0.25)]">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-cyan-200">評価進捗</h3>
+          <span className="text-3xl font-black tracking-[0.35em] text-cyan-100">
             {progressPercentage}%
           </span>
         </div>
-        
-        <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
-          <div 
-            className="bg-blue-600 h-3 rounded-full transition-all duration-500 ease-out"
+
+        <div className="mb-4 h-3 w-full overflow-hidden rounded-full bg-slate-800">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 transition-all duration-500 ease-out"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
-        
-        <div className="text-center text-sm text-gray-600">
+
+        <div className="text-center text-xs uppercase tracking-[0.35em] text-slate-300">
           {completedCount} / {totalPlayers} プレイヤーの評価完了
         </div>
       </div>
-      
+
       {/* 個別プレイヤーの評価状況 */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {evaluationProgress.map((progress, index) => {
           const getStatusColor = (status: EvaluationProgress['status']) => {
             switch (status) {
-              case 'waiting': return 'bg-gray-100 text-gray-600';
-              case 'evaluating': return 'bg-blue-100 text-blue-700';
-              case 'completed': return 'bg-green-100 text-green-700';
-              case 'error': return 'bg-red-100 text-red-700';
-              default: return 'bg-gray-100 text-gray-600';
+              case 'waiting': return 'border-slate-700/60 text-slate-300';
+              case 'evaluating': return 'border-cyan-400/40 text-cyan-200';
+              case 'completed': return 'border-emerald-400/40 text-emerald-200';
+              case 'error': return 'border-rose-400/40 text-rose-300';
+              default: return 'border-slate-700/60 text-slate-300';
             }
           };
-          
+
           const getStatusText = (status: EvaluationProgress['status']) => {
             switch (status) {
               case 'waiting': return '待機中...';
@@ -166,7 +166,7 @@ export function AIEvaluationScreen({ onEvaluationComplete }: AIEvaluationScreenP
               default: return '不明';
             }
           };
-          
+
           const getStatusIcon = (status: EvaluationProgress['status']) => {
             switch (status) {
               case 'waiting': return '⏳';
@@ -176,70 +176,69 @@ export function AIEvaluationScreen({ onEvaluationComplete }: AIEvaluationScreenP
               default: return '❓';
             }
           };
-          
+
           return (
-            <div 
+            <div
               key={progress.playerId}
-              className="bg-white rounded-lg border p-4"
+              className="rounded-3xl border border-cyan-400/20 bg-slate-950/70 p-5 shadow-[0_0_35px_rgba(15,23,42,0.6)]"
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-500 text-white flex items-center justify-center font-bold">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full border border-cyan-400/30 bg-slate-900/70 text-sm font-bold text-cyan-200">
                     {index + 1}
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-800">
+                    <h4 className="text-sm font-semibold text-slate-100">
                       {progress.playerName}
                     </h4>
                     {progress.totalScore && (
-                      <p className="text-sm text-gray-600">
+                      <p className="text-xs text-slate-400">
                         スコア: {progress.totalScore}点
                       </p>
                     )}
                   </div>
                 </div>
-                
-                <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(progress.status)}`}>
+
+                <div className={`flex items-center gap-2 rounded-full border px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] ${getStatusColor(progress.status)}`}>
                   <span>{getStatusIcon(progress.status)}</span>
                   <span>{getStatusText(progress.status)}</span>
                 </div>
               </div>
-              
+
               {progress.comment && (
-                <div className="mt-2 text-sm text-gray-600 bg-gray-50 rounded p-2">
+                <div className="mt-3 rounded-2xl border border-slate-700/60 bg-slate-900/70 p-3 text-xs text-slate-300">
                   {progress.comment}
                 </div>
               )}
-              
+
               {progress.status === 'evaluating' && (
-                <div className="mt-2">
-                  <div className="w-full bg-blue-200 rounded-full h-1">
-                    <div className="bg-blue-600 h-1 rounded-full animate-pulse" style={{width: '60%'}} />
-                  </div>
+                <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-full w-3/5 animate-pulse rounded-full bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500" />
                 </div>
               )}
             </div>
           );
         })}
       </div>
-      
+
       {/* 評価完了時のメッセージ */}
       {completedCount === totalPlayers && (
-        <div className="text-center py-6 bg-green-50 rounded-lg">
-          <h3 className="text-xl font-bold text-green-800 mb-2">
+        <div className="rounded-3xl border border-emerald-400/40 bg-slate-950/70 p-6 text-center shadow-[0_0_40px_rgba(16,185,129,0.35)]">
+          <h3 className="mb-2 text-xl font-black text-emerald-200">
             🎉 全ての評価が完了しました！
           </h3>
-          <p className="text-green-600">
+          <p className="text-xs uppercase tracking-[0.35em] text-emerald-100">
             まもなく結果発表画面に移動します...
           </p>
         </div>
       )}
-      
+
       {/* 手動進行ボタン（開発・テスト用） */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="text-center pt-4 border-t">
+        <div className="border-t border-slate-700/60 pt-4 text-center">
           <Button
             variant="secondary"
+            className="border border-slate-700/60 bg-slate-900/70 text-xs uppercase tracking-[0.35em] text-slate-300 hover:border-cyan-300/40 hover:text-cyan-100"
             onClick={onEvaluationComplete}
           >
             [開発用] 結果画面に進む
